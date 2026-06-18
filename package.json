@@ -1,0 +1,35 @@
+{
+  "author": "Alex Kahn",
+  "description": "In-house partnership & relationship intelligence — AI reasoning over the full partnership lifecycle (trust & fit scoring, relationship classification, connection framing, partner verification, outreach, deal structure), provider-injected so you don't pay a deal-copilot SaaS per seat.",
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "5.9.3"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "BSL-1.1",
+  "main": "./dist/index.js",
+  "name": "@absolutejs/partnership",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/absolutejs/partnership.git"
+  },
+  "scripts": {
+    "build": "rm -rf dist && bun build src/index.ts --outdir dist --target=bun --external zod && tsc --emitDeclarationOnly --project tsconfig.json",
+    "release": "bun run build && bun publish",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "0.0.7"
+}
