@@ -1,6 +1,6 @@
 {
   "author": "Alex Kahn",
-  "description": "In-house partnership & relationship intelligence \u2014 AI reasoning over the full partnership lifecycle (trust & fit scoring, relationship classification, connection framing, partner verification, outreach, deal structure), provider-injected so you don't pay a deal-copilot SaaS per seat.",
+  "description": "In-house partnership & relationship intelligence — AI reasoning over the full partnership lifecycle (trust & fit scoring, relationship classification, connection framing, partner verification, outreach, deal structure), provider-injected so you don't pay a deal-copilot SaaS per seat.",
   "dependencies": {
     "zod": "^4.3.6",
     "@absolutejs/manifest": "^0.1.0",
@@ -33,7 +33,7 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "absolutejs": {
     "manifestContract": 1
   },
