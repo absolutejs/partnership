@@ -47,7 +47,13 @@ describe("scoreTrustFit", () => {
     const result = await scoreTrustFit(
       {
         member: { niche: "devtools", offer: "CI" },
-        partner: { company: { name: "Acme" } },
+        partner: {
+          associatedCompany: "Acme",
+          company: { name: "Acme" },
+          person: { full_name: "Jane Doe" },
+          primaryPartyKind: "individual",
+          primaryPartyName: "Jane Doe",
+        },
         priorScores: { theirReceptiveness: 0.4, yourFit: 0.9 },
       },
       { generateObject },
@@ -61,6 +67,7 @@ describe("scoreTrustFit", () => {
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
     expect(payload.scores.yourFit).toBe(0.9);
     expect(payload.partner.company.name).toBe("Acme");
+    expect(payload.partner.primaryPartyName).toBe("Jane Doe");
 
     expect(result.dimensions.audienceOverlap).toBe(0.8);
     // whyFit is truncated to REASON_MAX (600) and used as the rationale.
@@ -361,6 +368,11 @@ describe("draftPartnershipAsset", () => {
         assetTypeLabel: "Deal Memo",
         bounds: { markdownMax: 9000, markdownMin: 1, titleMax: 120, titleMin: 1 },
         match: { company: "Acme" },
+        party: {
+          associatedCompany: "Acme",
+          primaryPartyKind: "individual",
+          primaryPartyName: "Jane Doe",
+        },
         profile: { niche: "CI" },
       },
       { generateObject },
@@ -368,6 +380,7 @@ describe("draftPartnershipAsset", () => {
     expect(calls[0]?.toolName).toBe("partnership_asset");
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
     expect(payload.assetTypeLabel).toBe("Deal Memo");
+    expect(payload.party.primaryPartyName).toBe("Jane Doe");
     expect(result.title).toBe("Deal Memo: Acme");
   });
 });

@@ -144,6 +144,17 @@ export type PartnershipAsset = {
   title: string;
 };
 
+export type PartnershipPartyKind = "company" | "individual";
+
+export type PartnershipParty = {
+  /** Company affiliation when the primary party is an individual. */
+  associatedCompany?: string;
+  /** Named contact when the primary party is a company. */
+  contact?: string;
+  primaryPartyKind: PartnershipPartyKind;
+  primaryPartyName: string;
+};
+
 export type AssetInput = {
   /** Stable key for the document kind — a known catalog type. */
   assetType: PartnershipAssetType;
@@ -152,11 +163,13 @@ export type AssetInput = {
   bounds: AssetBounds;
   /** Match facts, serialized verbatim into the prompt. */
   match: Record<string, unknown>;
+  /** Explicit identity and role of the party this document is about. */
+  party?: PartnershipParty;
   /** Member/profile facts, serialized verbatim into the prompt. */
   profile: Record<string, unknown>;
 };
 
-const SYSTEM = `You generate concise, enterprise-grade partnership documents for partnership teams. Follow the STRUCTURE GUIDANCE for the requested document type exactly. Use only the supplied facts — do not invent metrics, customer names, quotes, guarantees, meeting dates, or legal terms (use clearly-labeled placeholders where a fact is missing). Return clean markdown with useful headings, bullets, and specific, grounded content.`;
+const SYSTEM = `You generate concise, enterprise-grade partnership documents for partnership teams. Follow the STRUCTURE GUIDANCE for the requested document type exactly. When PARTY is supplied, the document is about PARTY.primaryPartyName: use that name in the title and frame the thesis, roles, value, and recommendations around that primary party. For an individual primary party, associatedCompany is only their affiliation or a possible organizational constraint; never turn it into the partner, community, audience, or counterparty unless the supplied facts explicitly establish that role. For a company primary party, contact is only the person representing that company. Use only the supplied facts — do not invent metrics, customer names, quotes, guarantees, meeting dates, or legal terms (use clearly-labeled placeholders where a fact is missing). Return clean markdown with useful headings, bullets, and specific, grounded content.`;
 
 const assetSchema = (bounds: AssetBounds) =>
   z.object({
@@ -182,6 +195,7 @@ export const draftPartnershipAsset = async (
           assetType: input.assetType,
           assetTypeLabel: input.assetTypeLabel ?? entry.label,
           match: input.match,
+          party: input.party,
           profile: input.profile,
           structureGuidance: entry.guidance,
         }),
@@ -211,11 +225,13 @@ export type AssetEditInput = {
   instructions: string;
   /** Optional fresh match facts to ground new content. */
   match?: Record<string, unknown>;
+  /** Explicit identity and role of the party this document is about. */
+  party?: PartnershipParty;
   /** Optional fresh member/profile facts to ground new content. */
   profile?: Record<string, unknown>;
 };
 
-const EDIT_SYSTEM = `You revise an existing partnership document per the member's instructions. Keep everything that already works; apply ONLY the requested changes while honoring the document type's structure guidance. Do not invent facts (use clearly-labeled placeholders for anything missing). Return the FULL revised document — title + complete markdown body — not a diff or a description of changes.`;
+const EDIT_SYSTEM = `You revise an existing partnership document per the member's instructions. Keep everything that already works; apply ONLY the requested changes while honoring the document type's structure guidance. When PARTY is supplied, keep the title and document framed around PARTY.primaryPartyName. Treat associatedCompany as an individual's affiliation and contact as a company's representative, never as interchangeable primary parties. Do not invent facts (use clearly-labeled placeholders for anything missing). Return the FULL revised document — title + complete markdown body — not a diff or a description of changes.`;
 
 /** Edit an existing partnership document per member instructions — returns the
  *  full revised title + markdown. Throws on failure so the host can fall back to
@@ -239,6 +255,7 @@ export const editPartnershipAsset = async (
           currentTitle: input.currentTitle,
           instructions: input.instructions,
           match: input.match,
+          party: input.party,
           profile: input.profile,
           structureGuidance: entry.guidance,
         }),

@@ -18,7 +18,7 @@ const TrustFitSchema = z.object({
   whyYou: z.string(),
 });
 
-const SYSTEM = `You score a potential business partner on a Trust & Fit rubric for a specific member. Return four 0.0–1.0 scores and THREE separate reasons. Calibrate honestly — spread scores, don't cluster high.
+const SYSTEM = `You score a potential business partner on a Trust & Fit rubric for a specific member. When partner.primaryPartyName is supplied, that is the prospective partner being scored. For an individual primary party, associatedCompany is only their affiliation or an organizational constraint; distinguish the individual's interest, capability, and agency from their employer's incentives. For a company primary party, contact is only its representative. Return four 0.0–1.0 scores and THREE separate reasons. Calibrate honestly — spread scores, don't cluster high.
 - audienceOverlap: how much the two parties' audiences/customers genuinely overlap and would welcome this collaboration.
 - capability: how capable and credible the partner is at actually delivering (track record, maturity, execution).
 - mutualValue: how strong and TWO-SIDED the value exchange is (both gain meaningfully, not one-way).
@@ -42,8 +42,12 @@ export type TrustFitMember = {
 /** The prospective partner. `company` / `person` / `reasoning` are opaque,
  *  app-shaped fact blobs serialized verbatim into the prompt. */
 export type TrustFitPartner = {
+  associatedCompany?: string;
   company?: unknown;
+  contact?: string;
   person?: unknown;
+  primaryPartyKind?: "company" | "individual";
+  primaryPartyName?: string;
   reasoning?: unknown;
 };
 
