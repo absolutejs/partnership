@@ -111,4 +111,6 @@ export {
   type AssetInput,
   type PartnershipAsset,
   type PartnershipAssetType,
+  type PartnershipParty,
+  type PartnershipPartyKind,
 } from "./assets";
