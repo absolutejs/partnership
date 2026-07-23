@@ -3,7 +3,7 @@
   "description": "In-house partnership & relationship intelligence — AI reasoning over the full partnership lifecycle (trust & fit scoring, relationship classification, connection framing, partner verification, outreach, deal structure), provider-injected so you don't pay a deal-copilot SaaS per seat.",
   "dependencies": {
     "zod": "^4.3.6",
-    "@absolutejs/manifest": "^0.1.0",
+    "@absolutejs/manifest": "^0.4.0",
     "@sinclair/typebox": "^0.34.0"
   },
   "devDependencies": {
@@ -33,9 +33,9 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "absolutejs": {
-    "manifestContract": 1
+    "manifestContract": 2
   },
   "exports": {
     ".": {

@@ -19,7 +19,7 @@ const memberInput = {
 };
 
 export const manifest = defineManifest<ResearchContext, ResearchContext>()({
-  contract: 1,
+  contract: 2,
   identity: {
     accent: "#f43f5e",
     category: "growth",
@@ -41,7 +41,16 @@ export const manifest = defineManifest<ResearchContext, ResearchContext>()({
   }),
   tools: {
     score_trust_fit: tool.runtime({
-      annotations: { openWorldHint: true, readOnlyHint: true },
+      annotations: { idempotentHint: true, openWorldHint: true },
+      authorization: {
+        approval: "never",
+        audience: "authenticated",
+        destinations: ["configured-partnership-research-provider"],
+        effects: ["read", "external-network"],
+        idempotency: { mode: "host" },
+        requiredScopes: ["partnerships:assess"],
+        reversible: false,
+      },
       description:
         "Score a prospective partner on four 0–1 dimensions (audience overlap, capability, mutual value, credibility) with a per-score reason for you, for them, and for the fit.",
       handler: async ({ member, partner, priorScores }, ctx) =>
@@ -100,7 +109,16 @@ export const manifest = defineManifest<ResearchContext, ResearchContext>()({
       }),
     }),
     verify_partner: tool.runtime({
-      annotations: { openWorldHint: true, readOnlyHint: true },
+      annotations: { idempotentHint: true, openWorldHint: true },
+      authorization: {
+        approval: "never",
+        audience: "authenticated",
+        destinations: ["configured-partnership-research-provider"],
+        effects: ["read", "external-network"],
+        idempotency: { mode: "host" },
+        requiredScopes: ["partnerships:assess"],
+        reversible: false,
+      },
       description:
         "Build a structured due-diligence dossier on a prospective partner: credibility score with findings and risks, delivery track record, audience overlap, partnership economics, and open questions. Web-grounded when the host wired a research call; knowledge-only otherwise.",
       handler: async ({ member, partner, partnership }, ctx) =>
@@ -113,9 +131,7 @@ export const manifest = defineManifest<ResearchContext, ResearchContext>()({
       input: Type.Object({
         member: Type.Optional(Type.Object(memberInput)),
         partner: Type.Object({
-          company: Type.Optional(
-            Type.Record(Type.String(), Type.Unknown()),
-          ),
+          company: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
           employeeCount: Type.Optional(Type.Integer({ minimum: 0 })),
           industry: Type.Optional(Type.String()),
           linkedinUrl: Type.Optional(Type.String()),
