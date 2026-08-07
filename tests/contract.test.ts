@@ -138,6 +138,13 @@ describe("frameConnection", () => {
 
 describe("verifyPartner", () => {
   const dossier = {
+    affiliations: [
+      {
+        domains: ["parent.example"],
+        name: "Parent Co",
+        relationship: "owned by",
+      },
+    ],
     audienceOverlap: { rationale: "r", score: 0.6 },
     credibility: { findings: ["f"], risks: ["x"], score: 0.7 },
     economics: { assessment: "ok", risks: ["thin"] },
@@ -165,6 +172,7 @@ describe("verifyPartner", () => {
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
     expect(payload.research).toContain("well-reviewed");
     expect(result.summary).toBe("credible");
+    expect(result.affiliations[0]?.domains).toEqual(["parent.example"]);
     expect(typeof result.researchedAt).toBe("string");
   });
 

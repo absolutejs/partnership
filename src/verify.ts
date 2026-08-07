@@ -10,6 +10,13 @@ const SYNTH_MAX_TOKENS = 1800;
 // the lengths and clampDeep bounds the result. (See bounded.ts / trustFit.ts.)
 const Score = z.number().min(0).max(1);
 const DossierSchema = z.object({
+  affiliations: z.array(
+    z.object({
+      domains: z.array(z.string()),
+      name: z.string(),
+      relationship: z.string(),
+    }),
+  ),
   audienceOverlap: z.object({
     rationale: z.string(),
     score: Score,
@@ -71,6 +78,7 @@ export type VerificationContext = ResearchContext;
 const RESEARCH_SYSTEM = `You are a partnership due-diligence researcher. Search the web for honest, specific, current evidence about whether a company is real, credible, and a safe partner. Focus on: reputation and legitimacy (is this a genuine, operating business), financial health and stability signals, customer satisfaction and complaints (review sites, Reddit, forums, X/Twitter), and delivery / execution track record (do they ship, honor commitments, retain customers). Report concrete findings with specifics. Do not invent. If you can't verify something, say so explicitly — gaps are themselves a finding.`;
 
 const SYNTH_SYSTEM = `You turn partnership due-diligence research into a structured Verification Dossier for a member evaluating a potential partner. This is lifecycle stage 2 (Verification): validate the partner is real and credible, confirm the audiences overlap, and stress-test the partnership economics. Use the supplied research; where it's thin, fall back to well-known public knowledge and be candid about uncertainty. Calibrate scores honestly — do NOT cluster high; a partner you couldn't verify should score lower. Output:
+- affiliations: verified parent, owner, subsidiary, or operating-brand relationships that can legitimately connect business identities. Each item has the affiliated company name, a plain relationship label, and only publicly verified corporate domains. Use [] when none are verified; never infer affiliation from similar names or email domains.
 - summary: 1-2 sentences on how credible and verifiable this partner is right now.
 - credibility.score: 0.0–1.0 — how real, trustworthy, and verifiable the partner is, given the evidence found.
 - credibility.findings: concrete positive evidence of legitimacy / good standing (reputation, longevity, satisfied customers, stability). 3-6 items.
@@ -86,7 +94,7 @@ Each list item is ONE concrete sentence. No fluff, no fabrication, no disparagin
 const researchPrompt = (name: string, industry?: string | null) =>
   `Research the company "${name}"${
     industry ? ` (industry: ${industry})` : ""
-  } as a potential business partner. Find, with specifics: (1) reputation and whether it's a legitimate, operating business, (2) financial health / stability signals, (3) customer satisfaction and the most common complaints, (4) delivery and execution track record. Report concrete, current findings, and flag anything you cannot verify.`;
+  } as a potential business partner. Find, with specifics: (1) reputation and whether it's a legitimate, operating business, (2) financial health / stability signals, (3) customer satisfaction and the most common complaints, (4) delivery and execution track record, and (5) any verified parent, owner, subsidiary, or operating-brand relationships with the official corporate domains involved. Report concrete, current findings, and flag anything you cannot verify.`;
 
 /** Web-research a prospective partner and synthesize a structured Verification
  *  Dossier (credibility, track record, audience overlap, economics). Uses the
