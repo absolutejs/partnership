@@ -1,3 +1,5 @@
+import { reviewResearchAnalysis } from "./researchReview";
+import { researchPromptData, type ResearchMetadata } from "./researchEvidence";
 import { z } from "zod";
 import { clampDeep } from "./bounded";
 import type { ResearchContext } from "./ai";
@@ -35,9 +37,8 @@ const DossierSchema = z.object({
   trackRecord: z.array(z.string()),
 });
 
-export type VerificationDossier = z.infer<typeof DossierSchema> & {
-  researchedAt: string;
-};
+export type VerificationDossier = z.infer<typeof DossierSchema> &
+  ResearchMetadata;
 
 export type VerifyMember = {
   audienceSizeTier?: string;
@@ -77,7 +78,7 @@ export type VerificationContext = ResearchContext;
 
 const RESEARCH_SYSTEM = `You are a partnership due-diligence researcher. Search the web for honest, specific, current evidence about whether a company is real, credible, and a safe partner. Focus on: reputation and legitimacy (is this a genuine, operating business), financial health and stability signals, customer satisfaction and complaints (review sites, Reddit, forums, X/Twitter), and delivery / execution track record (do they ship, honor commitments, retain customers). Report concrete findings with specifics. Do not invent. If you can't verify something, say so explicitly — gaps are themselves a finding.`;
 
-const SYNTH_SYSTEM = `You turn partnership due-diligence research into a structured Verification Dossier for a member evaluating a potential partner. This is lifecycle stage 2 (Verification): validate the partner is real and credible, confirm the audiences overlap, and stress-test the partnership economics. Use the supplied research; where it's thin, fall back to well-known public knowledge and be candid about uncertainty. Calibrate scores honestly — do NOT cluster high; a partner you couldn't verify should score lower. Output:
+const SYNTH_SYSTEM = `You turn partnership due-diligence research into a structured Verification Dossier for a member evaluating a potential partner. This is lifecycle stage 2 (Verification): validate the partner is real and credible, confirm the audiences overlap, and stress-test the partnership economics. Use the supplied research; where it is thin, mark facts unresolved and label interpretations as hypotheses. Do not fill gaps with model knowledge. Calibrate scores honestly — do NOT cluster high; a partner you couldn't verify should score lower. Output:
 - affiliations: verified parent, owner, subsidiary, or operating-brand relationships that can legitimately connect business identities. Each item has the affiliated company name, a plain relationship label, and only publicly verified corporate domains. Use [] when none are verified; never infer affiliation from similar names or email domains.
 - summary: 1-2 sentences on how credible and verifiable this partner is right now.
 - credibility.score: 0.0–1.0 — how real, trustworthy, and verifiable the partner is, given the evidence found.
@@ -133,8 +134,7 @@ export const verifyPartner = async (
             partnershipBucket: input.partnership?.partnershipBucket,
             revenueModel: input.partnership?.revenueModel,
           },
-          research:
-            research ?? "(no live research available — use public knowledge)",
+          research: researchPromptData(research),
         }),
         role: "user",
       },
@@ -148,5 +148,5 @@ export const verifyPartner = async (
   });
 
   // Bound the result (never reject) — the prompt guides lengths, this is the net.
-  return clampDeep({ ...object, researchedAt: new Date().toISOString() });
+  return reviewResearchAnalysis(clampDeep(object), research, input, ctx);
 };

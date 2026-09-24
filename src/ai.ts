@@ -1,3 +1,4 @@
+import type { StructuredResearch } from "./researchEvidence";
 // The injection contract. Every primitive in this package is a pure function of
 // its typed input plus a `PartnershipContext` that supplies the AI call. The
 // package builds the prompt, the JSON Schema, the tool name, and the validator;
@@ -55,7 +56,7 @@ export type GenerateObject = <T>(
 export type ResearchFn = (
   systemPrompt: string,
   userPrompt: string,
-) => Promise<string | null>;
+) => Promise<StructuredResearch | string | null>;
 
 /** Shared context every primitive accepts. */
 export type PartnershipContext = {

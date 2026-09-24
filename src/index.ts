@@ -95,11 +95,7 @@ export {
   type RenewalPlanInput,
   type RenewalVerdict,
 } from "./lifecycle";
-export {
-  redlineDeal,
-  type DealRedline,
-  type RedlineInput,
-} from "./redline";
+export { redlineDeal, type DealRedline, type RedlineInput } from "./redline";
 export {
   draftPartnershipAsset,
   editPartnershipAsset,
@@ -114,3 +110,9 @@ export {
   type PartnershipParty,
   type PartnershipPartyKind,
 } from "./assets";
+
+export {
+  researchMetadata,
+  type ResearchMetadata,
+  type StructuredResearch,
+} from "./researchEvidence";

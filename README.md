@@ -85,3 +85,9 @@ needs.
 BSL 1.1 → Apache 2.0 on the Change Date (see `LICENSE`). You may build and ship
 your own apps and SaaS on top of it; you may not offer it as a competing hosted
 partnership-intelligence / deal-copilot service.
+
+## Research evidence (0.1)
+
+`ResearchFn` accepts structured research alongside legacy `string | null`. Verification, competitor analysis and meeting preparation retain `researchStatus`, sources, findings and limitations. `researchedAt` is empty when source-bound research was unavailable; `generatedAt` is always generation time. Existing string research remains explicitly unverified.
+
+Structured research invokes a separate `researchEvidenceReview` generation through the host's `generateObject`, which must be budgeted and metered like the initial synthesis. `fieldEvidence` binds reviewed output paths to exact source excerpts, supplied input, proposed assessments or unresolved facts. Unsupported factual text becomes unresolved, and corporate affiliations are removed unless every textual field is source-supported. `analysisStatus` describes that review; numeric scores remain interpretations, not verified facts. A model's entailment judgment still requires human review for consequential decisions.

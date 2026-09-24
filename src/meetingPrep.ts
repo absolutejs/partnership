@@ -1,3 +1,5 @@
+import { reviewResearchAnalysis } from "./researchReview";
+import { researchPromptData, type ResearchMetadata } from "./researchEvidence";
 import { z } from "zod";
 import { clampDeep } from "./bounded";
 import type { ResearchContext } from "./ai";
@@ -22,10 +24,8 @@ const PrepSchema = z.object({
   whoTheyAre: z.string(),
 });
 
-export type MeetingPrepBrief = z.infer<typeof PrepSchema> & {
-  lastCall?: string;
-  researchedAt: string;
-};
+export type MeetingPrepBrief = z.infer<typeof PrepSchema> &
+  ResearchMetadata & { lastCall?: string };
 
 export type MeetingPrepMember = {
   audienceSizeTier?: string;
@@ -123,8 +123,7 @@ export const generateMeetingPrep = async (
           },
           priorCall: input.priorCall ?? null,
           relationship: input.relationship,
-          research:
-            research ?? "(no live research available — use public knowledge)",
+          research: researchPromptData(research),
         }),
         role: "user",
       },
@@ -139,8 +138,7 @@ export const generateMeetingPrep = async (
 
   // Clamp only the AI output; lastCall is passthrough input, left intact.
   return {
-    ...clampDeep(object),
+    ...(await reviewResearchAnalysis(clampDeep(object), research, input, ctx)),
     lastCall: input.priorCall ?? undefined,
-    researchedAt: new Date().toISOString(),
   };
 };

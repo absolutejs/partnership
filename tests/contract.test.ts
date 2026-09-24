@@ -157,7 +157,10 @@ describe("verifyPartner", () => {
     const { calls, generateObject } = stub(dossier);
     let researchedName = "";
     const result = await verifyPartner(
-      { member: { niche: "CI" }, partner: { name: "Acme", industry: "devtools" } },
+      {
+        member: { niche: "CI" },
+        partner: { name: "Acme", industry: "devtools" },
+      },
       {
         generateObject,
         research: async (_sys, user) => {
@@ -170,7 +173,7 @@ describe("verifyPartner", () => {
 
     expect(researchedName).toContain("Acme");
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
-    expect(payload.research).toContain("well-reviewed");
+    expect(payload.research.text).toContain("well-reviewed");
     expect(result.summary).toBe("credible");
     expect(result.affiliations[0]?.domains).toEqual(["parent.example"]);
     expect(typeof result.researchedAt).toBe("string");
@@ -183,7 +186,7 @@ describe("verifyPartner", () => {
       { generateObject },
     );
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
-    expect(payload.research).toContain("no live research available");
+    expect(payload.research.status).toBe("unavailable");
   });
 });
 
@@ -211,7 +214,7 @@ describe("generateMeetingPrep", () => {
     );
     expect(calls[0]?.toolName).toBe("meeting_prep_brief");
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
-    expect(payload.research).toContain("shipped v2");
+    expect(payload.research.text).toContain("shipped v2");
     expect(payload.relationship).toBe("2 prior emails");
     expect(result.lastCall).toBe("we spoke last month");
     expect(typeof result.researchedAt).toBe("string");
@@ -233,7 +236,7 @@ describe("analyzeCompetitor", () => {
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
     expect(calls[0]?.toolName).toBe("competitor_analysis");
     expect(payload.company.name).toBe("this company");
-    expect(payload.research).toContain("no live research");
+    expect(payload.research.status).toBe("unavailable");
     expect(result.summary).toBe("head to head");
   });
 });
@@ -282,7 +285,11 @@ describe("generateNudges", () => {
     expect(result[0]?.nudge).toBe("follow up");
 
     const empty = stub({ suggestions: [] });
-    const none = await generateNudges([], {}, { generateObject: empty.generateObject });
+    const none = await generateNudges(
+      [],
+      {},
+      { generateObject: empty.generateObject },
+    );
     expect(none).toEqual([]);
     expect(empty.calls.length).toBe(0);
   });
@@ -334,7 +341,8 @@ describe("lifecycle planners", () => {
     expect(calls[0]?.toolName).toBe("renewal_plan");
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
     expect(payload.comparablePastRenewals).toEqual(["past renewal"]);
-    const verdict: "renew" | "restructure" | "expand" | "sunset" = result.verdict;
+    const verdict: "renew" | "restructure" | "expand" | "sunset" =
+      result.verdict;
     expect(verdict).toBe("renew");
     expect(typeof result.plannedAt).toBe("string");
   });
@@ -374,7 +382,12 @@ describe("draftPartnershipAsset", () => {
       {
         assetType: "deal_memo",
         assetTypeLabel: "Deal Memo",
-        bounds: { markdownMax: 9000, markdownMin: 1, titleMax: 120, titleMin: 1 },
+        bounds: {
+          markdownMax: 9000,
+          markdownMin: 1,
+          titleMax: 120,
+          titleMin: 1,
+        },
         match: { company: "Acme" },
         party: {
           associatedCompany: "Acme",
