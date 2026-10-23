@@ -13,3 +13,23 @@ describe("partner revenue scenarios", () => {
  test("unverified string research cannot manufacture revenue",async()=>{const r=await researchPartnerRevenuePipeline({partnerName:"Example"},{research:async()=>"$100m",generateObject:async()=>{throw Error("must not call")}});expect(r.status).toBe("unavailable");});
  test("extracted citation must match a retained source and quote",async()=>{const r=await researchPartnerRevenuePipeline({partnerName:"Example",clientPricing:money(240)},{research:async()=>({status:"grounded",text:"",sources:[],findings:[],limitations:[],generatedAt:new Date().toISOString()}),generateObject:async(req)=>({object:req.validate({partnerAnnualRevenue:money(1200000),partnerPricing:money(1200),assumptions:[]})})});expect(r.status).toBe("unavailable");expect(r.limitations.join()).toContain("retained source quote");});
 });
+
+describe("client pricing research", () => {
+  const run = async (explicit?: RevenueAmount, extractedClient = money(240)) => {
+    let prompt = "";
+    const revenue = money(1200000), price = money(1200);
+    revenue.evidence.quote = "Company annual revenue was USD 1.2 million.";
+    price.evidence.quote = "Partner subscription costs USD 1200 per company per year.";
+    extractedClient.evidence.quote = "Client subscription costs USD 240 per company per year.";
+    extractedClient.evidence.sourceUrl = "https://client.example/pricing";
+    const values = [revenue, price, extractedClient];
+    const result = await researchPartnerRevenuePipeline({partnerName:"Partner",clientName:"Client",clientWebsite:"https://client.example",clientPricing:explicit}, {
+      research: async (_system, user) => {prompt=user;return {status:"grounded",text:"",sources:values.map((v,i)=>({id:`s${i}`,url:v.evidence.sourceUrl!,title:v.evidence.sourceTitle})),findings:values.map((v,i)=>({claim:v.evidence.quote,quote:v.evidence.quote,sourceId:`s${i}`})),limitations:[],generatedAt:new Date().toISOString()};},
+      generateObject: async(req)=>({object:req.validate({partnerAnnualRevenue:revenue,partnerPricing:price,clientPricing:extractedClient,assumptions:[]})}),
+    });
+    return {result,prompt:JSON.parse(prompt)};
+  };
+  test("researches and calculates sourced client subscription price",async()=>{const {result,prompt}=await run();expect(prompt.queries).toHaveLength(3);expect(prompt.queries[2]).toContain("client.example");expect(result.status).toBe("available");expect(result.potentialPartnerRevenue).toBe(240000);expect(result.inputs.clientPricing?.evidence.sourceUrl).toBe("https://client.example/pricing");});
+  test("explicit client value wins and skips client search",async()=>{const explicit=money(480);explicit.evidence.basis="client_reported";const {result,prompt}=await run(explicit);expect(prompt.queries).toHaveLength(2);expect(result.inputs.clientPricing).toEqual(explicit);expect(result.potentialPartnerRevenue).toBe(480000);});
+  test("client amount not supported by quote stays unavailable",async()=>{const {result}=await run(undefined,money(2400));expect(result.status).toBe("unavailable");expect(result.inputs.clientPricing).toBeNull();});
+});

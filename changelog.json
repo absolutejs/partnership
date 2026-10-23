@@ -5,6 +5,20 @@
 		{
 			"changes": [
 				{
+					"kind": "fixed",
+					"summary": "Research missing client subscription pricing without overriding explicit annual customer values",
+					"symbols": [
+						"RevenuePipelineResearchInput",
+						"researchPartnerRevenuePipeline"
+					]
+				}
+			],
+			"date": "2026-10-23",
+			"version": "0.2.1"
+		},
+		{
+			"changes": [
+				{
 					"kind": "added",
 					"summary": "Add source-bound partner revenue pipeline scenarios with explicit assumptions and missing-data handling"
 				}
