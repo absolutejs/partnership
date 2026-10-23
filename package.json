@@ -30,7 +30,7 @@
     "url": "https://github.com/absolutejs/partnership.git"
   },
   "scripts": {
-    "build": "rm -rf dist && bun build src/index.ts src/manifest.ts --outdir dist --root ./src --target=bun --external zod && tsc --emitDeclarationOnly --project tsconfig.json && absolute-manifest emit",
+    "build": "rm -rf dist && bun build src/index.ts src/manifest.ts src/revenuePipeline.ts --outdir dist --root ./src --target=bun --external zod && tsc --emitDeclarationOnly --project tsconfig.json && absolute-manifest emit",
     "release": "bun run build && bun publish",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
@@ -39,7 +39,7 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "absolutejs": {
     "manifestContract": 2
   },
@@ -54,6 +54,11 @@
       "import": "./dist/manifest.js",
       "default": "./dist/manifest.js"
     },
-    "./manifest.json": "./dist/manifest.json"
+    "./manifest.json": "./dist/manifest.json",
+    "./revenue": {
+      "types": "./dist/revenuePipeline.d.ts",
+      "import": "./dist/revenuePipeline.js",
+      "default": "./dist/revenuePipeline.js"
+    }
   }
 }

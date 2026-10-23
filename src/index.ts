@@ -116,3 +116,17 @@ export {
   type ResearchMetadata,
   type StructuredResearch,
 } from "./researchEvidence";
+export {
+  calculatePartnerRevenuePipeline,
+  researchPartnerRevenuePipeline,
+  RevenueEvidenceSchema,
+  RevenueAmountSchema,
+  PartnerRevenuePipelineInputSchema,
+  type RevenueEvidence,
+  type RevenueAmount,
+  type PartnerRevenuePipelineInput,
+  type PartnerRevenuePipeline,
+  type RevenuePipelineResearchInput,
+} from "./revenuePipeline";
+export { PartnerRevenuePipelineSchema } from "./revenuePipeline";
+export { revenueAmountSchema, partnerRevenuePipelineSchema } from "./revenuePipeline";
