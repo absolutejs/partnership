@@ -2,7 +2,18 @@ import { z } from "zod";
 import type { PartnershipContext } from "./ai";
 
 const DEFAULT_MODEL = "claude-haiku-4-5-20251001";
-const ASSET_MAX_TOKENS = 2200;
+const MIN_ASSET_OUTPUT_TOKENS = 2200;
+const ASSET_JSON_OVERHEAD_TOKENS = 256;
+const ESTIMATED_CHARACTERS_PER_TOKEN = 2;
+/** Budget for a complete structured document, including JSON escaping. This
+ * is an output ceiling, not a target length or permission to invent content. */
+const assetOutputTokens = (bounds: AssetBounds) => {
+  if (!Number.isSafeInteger(bounds.markdownMax) || bounds.markdownMax <= 0 ||
+      !Number.isSafeInteger(bounds.titleMax) || bounds.titleMax <= 0)
+    throw new Error("Asset output bounds must be positive safe integers");
+  return Math.max(MIN_ASSET_OUTPUT_TOKENS,
+    Math.ceil((bounds.markdownMax + bounds.titleMax) / ESTIMATED_CHARACTERS_PER_TOKEN) + ASSET_JSON_OVERHEAD_TOKENS);
+};
 
 // The canonical enterprise partnership-asset library. The KEY is the stable
 // `assetType` (stored verbatim by hosts); `label` is the human name; `guidance`
@@ -188,12 +199,13 @@ export const draftPartnershipAsset = async (
 
   const { object } = await ctx.generateObject({
     feature: "partnershipAssets",
-    maxTokens: ASSET_MAX_TOKENS,
+    maxTokens: assetOutputTokens(input.bounds),
     messages: [
       {
         content: JSON.stringify({
           assetType: input.assetType,
           assetTypeLabel: input.assetTypeLabel ?? entry.label,
+          lengthBounds: input.bounds,
           match: input.match,
           party: input.party,
           profile: input.profile,
@@ -245,12 +257,13 @@ export const editPartnershipAsset = async (
 
   const { object } = await ctx.generateObject({
     feature: "partnershipAssetEdit",
-    maxTokens: ASSET_MAX_TOKENS,
+    maxTokens: assetOutputTokens(input.bounds),
     messages: [
       {
         content: JSON.stringify({
           assetType: input.assetType,
           assetTypeLabel: input.assetTypeLabel ?? entry.label,
+          lengthBounds: input.bounds,
           currentMarkdown: input.currentMarkdown,
           currentTitle: input.currentTitle,
           instructions: input.instructions,

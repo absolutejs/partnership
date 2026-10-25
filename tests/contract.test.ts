@@ -401,7 +401,18 @@ describe("draftPartnershipAsset", () => {
     expect(calls[0]?.toolName).toBe("partnership_asset");
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
     expect(payload.assetTypeLabel).toBe("Deal Memo");
+    expect(calls[0]?.maxTokens).toBeGreaterThan(4500);
+    expect(payload.lengthBounds.markdownMax).toBe(9000);
     expect(payload.party.primaryPartyName).toBe("Jane Doe");
     expect(result.title).toBe("Deal Memo: Acme");
   });
+});
+
+
+test("asset output budget follows requested document size without stretching short assets", async () => {
+  const { calls, generateObject } = stub({title:"Memo",markdown:"Short memo"});
+  for (const markdownMax of [1200,8000,16000]) {
+    await draftPartnershipAsset({ assetType:"deal_memo", bounds:{markdownMin:1,markdownMax,titleMin:1,titleMax:120}, match:{},profile:{} },{generateObject});
+  }
+  expect(calls.map(call=>call.maxTokens)).toEqual([2200,4316,8316]);
 });

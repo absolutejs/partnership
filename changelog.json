@@ -6,6 +6,19 @@
 			"changes": [
 				{
 					"kind": "fixed",
+					"summary": "Size asset generation and revision output budgets from requested document bounds and pass those bounds into the drafting prompt.",
+					"symbols": [
+						"editPartnershipAsset"
+					]
+				}
+			],
+			"date": "2026-10-25",
+			"version": "0.2.2"
+		},
+		{
+			"changes": [
+				{
+					"kind": "fixed",
 					"summary": "Research missing client subscription pricing without overriding explicit annual customer values",
 					"symbols": [
 						"RevenuePipelineResearchInput",
