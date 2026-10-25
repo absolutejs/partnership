@@ -5,6 +5,19 @@
 		{
 			"changes": [
 				{
+					"kind": "fixed",
+					"summary": "Prioritize source evidence over document templates and use Sonnet for factual asset drafting and editing; preserve uncertainty and omit unsupported sections.",
+					"symbols": [
+						"draftPartnershipAsset"
+					]
+				}
+			],
+			"date": "2026-10-25",
+			"version": "0.2.4"
+		},
+		{
+			"changes": [
+				{
 					"kind": "added",
 					"summary": "Carry original evidence sources through asset drafting and editing; keep missing facts explicit instead of inventing commercial terms or replacing source details with profile summaries.",
 					"symbols": [

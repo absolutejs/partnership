@@ -400,6 +400,8 @@ describe("draftPartnershipAsset", () => {
       { generateObject },
     );
     expect(calls[0]?.toolName).toBe("partnership_asset");
+    expect(calls[0]?.model).toBe("claude-sonnet-4-6");
+    expect(calls[0]?.systemPrompt).toContain("Factual integrity takes precedence");
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
     expect(payload.assetTypeLabel).toBe("Deal Memo");
     expect(payload.sources[0].content).toContain("healthcare platform");

@@ -39,7 +39,7 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "absolutejs": {
     "manifestContract": 2
   },
