@@ -105,6 +105,7 @@ export {
   type AssetBounds,
   type AssetEditInput,
   type AssetInput,
+  type AssetSource,
   type PartnershipAsset,
   type PartnershipAssetType,
   type PartnershipParty,

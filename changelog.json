@@ -5,6 +5,23 @@
 		{
 			"changes": [
 				{
+					"kind": "added",
+					"summary": "Carry original evidence sources through asset drafting and editing; keep missing facts explicit instead of inventing commercial terms or replacing source details with profile summaries.",
+					"symbols": [
+						"AssetSource",
+						"AssetInput",
+						"AssetEditInput",
+						"draftPartnershipAsset",
+						"editPartnershipAsset"
+					]
+				}
+			],
+			"date": "2026-10-25",
+			"version": "0.2.3"
+		},
+		{
+			"changes": [
+				{
 					"kind": "fixed",
 					"summary": "Size asset generation and revision output budgets from requested document bounds and pass those bounds into the drafting prompt.",
 					"symbols": [

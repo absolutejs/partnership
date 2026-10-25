@@ -382,6 +382,7 @@ describe("draftPartnershipAsset", () => {
       {
         assetType: "deal_memo",
         assetTypeLabel: "Deal Memo",
+        sources: [{id:"intake:original",label:"Original project",content:"ThriveKin: healthcare platform, authentication, backend workflows and AI features."}],
         bounds: {
           markdownMax: 9000,
           markdownMin: 1,
@@ -401,6 +402,9 @@ describe("draftPartnershipAsset", () => {
     expect(calls[0]?.toolName).toBe("partnership_asset");
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
     expect(payload.assetTypeLabel).toBe("Deal Memo");
+    expect(payload.sources[0].content).toContain("healthcare platform");
+    expect(calls[0]?.systemPrompt).toContain("primary evidence");
+    expect(calls[0]?.systemPrompt).toContain("Do not infer hours per pricing tier");
     expect(calls[0]?.maxTokens).toBeGreaterThan(4500);
     expect(payload.lengthBounds.markdownMax).toBe(9000);
     expect(payload.party.primaryPartyName).toBe("Jane Doe");
