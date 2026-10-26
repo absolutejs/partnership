@@ -8,6 +8,8 @@ const input={assetType:'qbr' as const,sources,document:rendered.evidenceDocument
 test('reviews source-backed blocks in their section context and gates required inputs',async()=>{
  const review=await reviewAssetContent(input,{generateObject:async req=>{
   const data=JSON.parse(req.messages[0]!.content);
+  expect(data.format).not.toHaveProperty('headings');
+  expect(data.format.permittedHeadings).toContain('Results');
   expect(data).not.toHaveProperty('sources');
   expect(data).not.toHaveProperty('evidence');
   expect(data.blocks[0]).toMatchObject({heading:'Results',text:'Our target is 137 new customers.'});

@@ -17,7 +17,7 @@ For other formats, require the requested usable deliverable rather than a dilige
 Issue messages must be short, actionable and written for the member. Do not include internal hashes or evaluator jargon. Never claim independent verification of member-provided facts.`;
 const Message = z.string().trim().min(1).max(500);
 const ReviewSchema = z.object({
-  blocks: z.array(z.object({ index: z.number().int().min(0), issue: Message.nullable() }).strict()),
+  blocks: z.array(z.object({ index: z.number().int().min(0), issue: Message.nullable().describe("Null when the block is correct. Otherwise one actionable content defect only. Never put praise, a successful check, or a repeated missing-input question here.") }).strict()),
   documentIssues: z.array(Message).max(10),
   requiredInputs: z.array(Message.describe("Only a missing factual value or approval the member must supply; never a writing task, bracketed placeholder or optional enhancement.")).max(10),
 }).strict();
@@ -40,7 +40,7 @@ export const reviewAssetContent = async (input: {
   const { object } = await ctx.generateObject({
     feature: "assetContentReview", model: ctx.model ?? "claude-sonnet-4-6", maxTokens: 4000,
     schema: z.toJSONSchema(ReviewSchema), systemPrompt: ASSET_CONTENT_POLICY,
-    messages: [{role:"user",content:JSON.stringify({assetType:input.assetType,format:ASSET_FORMATS[input.assetType],suppliedFacts:input.sources.filter(source=>source.kind === "operator" && source.content.length <= 6000).map(source=>({label:source.label,content:source.content})),blocks,document:presentAssetEvidenceDocument(input.sources,input.markdown,input.document,{assetType:input.assetType}).markdown})}],
+    messages: [{role:"user",content:JSON.stringify({assetType:input.assetType,format:{mode:ASSET_FORMATS[input.assetType].mode,permittedHeadings:ASSET_FORMATS[input.assetType].headings},suppliedFacts:input.sources.filter(source=>source.kind === "operator" && source.content.length <= 6000).map(source=>({label:source.label,content:source.content})),blocks,document:presentAssetEvidenceDocument(input.sources,input.markdown,input.document,{assetType:input.assetType}).markdown})}],
     toolName:"review_asset_content",toolDescription:"Review document purpose, section relevance and required inputs before readiness.",
     validate: raw => {
       const parsed=ReviewSchema.parse(raw);
