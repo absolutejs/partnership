@@ -163,10 +163,12 @@ export type AssetPresentationSource = {
 const sourceStatement = (text: string) => {
   const rules: readonly [RegExp, string][] = [
     [/^My named dream partner is /u, "Target partner: "],
+    [/^I am the founder of /u, "Business: "],
     [/^I am /u, "Background: "],
     [/^We sell /u, "Offer: "],
     [/^I want /u, "Goal: "],
     [/^I have done /u, "Track record: "],
+    [/^I have (\d+(?:\.\d+)? hours? (?:per|a) week)/u, "Availability: $1"],
     [/^I will not /u, "Boundary: will not "],
     [/^My ([^.!?]+?) (?:is|are) /u, "$1: "],
     [/^Our /u, ""],
@@ -193,7 +195,8 @@ export const presentAssetEvidenceDocument = (sources: readonly AssetEvidenceSour
       seen.add(key);
       if (block.kind !== "source") {
         const label = block.kind === "proposal" ? "Proposed" : block.kind === "question" ? "To confirm" : "Hypothetical example (fictional, not an actual result)";
-        return `**${label}:** ${plain(block.kind === "proposal" ? block.text.replace(/^Propose (?:that )?/iu, "") : block.text)}`;
+        const text = block.kind === "proposal" ? block.text.replace(/^Propose (?:that )?/iu, "") : block.text;
+        return format?.mode === "email" && block.kind === "proposal" ? plain(text) : `**${label}:** ${plain(text)}`;
       }
       const record = records.get(block.evidenceId);
       if (!record) throw new Error("Missing validated source record");
@@ -203,11 +206,12 @@ export const presentAssetEvidenceDocument = (sources: readonly AssetEvidenceSour
         references.set(record.sourceId, reference);
       }
       if (!reference.excerpts.includes(record.text)) reference.excerpts.push(record.text);
-      return `${plain(sourceStatement(record.text))} [${reference.number}]`;
+      return `${plain(format?.mode === "email" ? record.text : sourceStatement(record.text))} [${reference.number}]`;
     });
     if (!blocks.length) return [];
     return format?.mode === "email" || format?.mode === "announcement" ? blocks.join("\n\n") : `## ${section.heading}\n\n${blocks.join("\n\n")}`;
   });
+  if (format?.mode === "email") sections.unshift("**Suggested email — review before sending.**");
   if (format?.mode === "legal") sections.unshift("**Non-binding draft — for negotiation and legal review.**");
   const publicSources = [...references.values()];
   if (publicSources.length) sections.push(`## Sources\n\n${publicSources.map(source => `[${source.number}] ${plain(source.label)} — ${plain(source.provenance)}`).join("\n\n")}`);

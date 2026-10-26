@@ -15,7 +15,7 @@ for(const assetType of PARTNERSHIP_ASSET_TYPES){
    return {object:req.validate({sections:[{heading:format.headings[0],blocks:[block]}],missingInputs:[]})};
   }});
   const display=presentAssetEvidenceDocument(sources,result.markdown,result.evidenceDocument,{assetType});
-  expect(display.markdown).toContain('Offer: workshops');
+  expect(display.markdown).toContain(format.mode === 'email' ? 'We sell workshops' : 'Offer: workshops');
   expect(display.sources[0]!.excerpts).toEqual(['We sell workshops.']);
  });
 }

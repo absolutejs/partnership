@@ -44,7 +44,7 @@ test('reader copy removes conversational prefixes and repetition without changin
 test('email presentation has no report headings and legal templates retain draft status',()=>{
  const original=renderAssetEvidencePlan(sources,plan);
  const email=presentAssetEvidenceDocument(sources,original.markdown,original.evidenceDocument,{assetType:'outreach_email'});
- expect(email.markdown).not.toContain('## Overview');
+ expect(email.markdown).not.toContain('## Overview');expect(email.markdown).toContain('Suggested email');expect(email.markdown).not.toContain('**Proposed:**');
  expect(email.markdown).toContain('## Sources');
  for(const assetType of ['loi','mou','term_sheet'] as const){
   const legal=presentAssetEvidenceDocument(sources,original.markdown,original.evidenceDocument,{assetType});

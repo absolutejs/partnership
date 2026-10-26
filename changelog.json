@@ -3,6 +3,19 @@
   "name": "@absolutejs/partnership",
   "releases": [
     {
+      "version": "0.4.3",
+      "date": "2026-10-26",
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Keep source-backed email statements in the sender voice and label the draft once, while rendering founder and availability facts as neutral business fields in other documents.",
+          "symbols": [
+            "presentAssetEvidenceDocument"
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.4.2",
       "date": "2026-10-26",
       "changes": [
