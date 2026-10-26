@@ -54,8 +54,8 @@ test("draft request sends compact references rather than repeating integrity met
    const payload=JSON.parse(request.messages[0]!.content);
    expect(payload.sources[0].records[0].reference).toBe("e1");
    expect(request.messages[0]!.content).not.toContain("sourceDigest");
-   expect(()=>request.validate({sections:[{heading:"Overview",blocks:[{kind:"source",evidenceId:"e999999"}]}],missingInputs:[]})).toThrow();
-   return {object:request.validate({sections:[{heading:"Overview",blocks:[{kind:"source",evidenceId:"e1"}]}],missingInputs:[]})};
+   expect(()=>request.validate({sections:[{heading:"Recommendation",blocks:[{kind:"source",evidenceId:"e999999"}]}],missingInputs:[]})).toThrow();
+   return {object:request.validate({sections:[{heading:"Recommendation",blocks:[{kind:"source",evidenceId:"e1"}]}],missingInputs:[]})};
  }});
  expect(result.evidenceDocument.citations[0]?.id).toBe(records[0]?.id);
 });

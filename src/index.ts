@@ -133,3 +133,6 @@ export { PartnerRevenuePipelineSchema } from "./revenuePipeline";
 export { revenueAmountSchema, partnerRevenuePipelineSchema } from "./revenuePipeline";
 
 export { presentAssetEvidenceDocument, type AssetPresentationSource, buildAssetEvidence, renderAssetEvidencePlan, validateAssetEvidenceDocument, calculateAssetScenario, AssetEvidencePlanSchema, ASSET_EVIDENCE_HEADINGS, type AssetEvidenceSource, type AssetEvidenceRecord, type AssetEvidencePlan, type AssetEvidenceDocument } from "./assetEvidence";
+
+export { ASSET_FORMATS, type AssetFormatType } from "./assetFormats";
+export type { AssetPresentationOptions } from "./assetEvidence";

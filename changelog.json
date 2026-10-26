@@ -3,6 +3,32 @@
   "name": "@absolutejs/partnership",
   "releases": [
     {
+      "version": "0.4.2",
+      "date": "2026-10-26",
+      "changes": [
+        {
+          "kind": "added",
+          "summary": "Define per-format structured generation contracts for all 20 document types, with enforceable section, word and repetition limits.",
+          "symbols": [
+            "ASSET_FORMATS",
+            "AssetFormatType",
+            "AssetPresentationOptions",
+            "AssetEvidencePlanSchema",
+            "ASSET_EVIDENCE_HEADINGS"
+          ]
+        },
+        {
+          "kind": "changed",
+          "summary": "Present source-backed facts once with neutral conversational framing, stable citation numbers, email-specific layout and explicit non-binding legal draft labels while preserving original evidence and qualifiers.",
+          "symbols": [
+            "presentAssetEvidenceDocument",
+            "draftPartnershipAsset",
+            "editPartnershipAsset"
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.4.1",
       "date": "2026-10-26",
       "changes": [

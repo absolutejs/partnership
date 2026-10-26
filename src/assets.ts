@@ -1,3 +1,4 @@
+import { ASSET_FORMATS } from "./assetFormats";
 import { AssetEvidencePlanSchema, buildAssetEvidence, renderAssetEvidencePlan, type AssetEvidenceDocument, type AssetEvidenceSource } from "./assetEvidence";
 import { z } from "zod";
 import type { PartnershipContext } from "./ai";
@@ -30,8 +31,8 @@ export const PARTNERSHIP_ASSET_CATALOG = {
   },
   pitch_deck: {
     guidance:
-      "A slide-by-slide pitch deck outline — ONE markdown H2 per slide (Title, Problem, Solution, Why Partner With Us, Market, Mutual Value, Proof, The Ask, Next Steps). 2-4 bullet talking points per slide. Presenter-ready, not paragraphs.",
-    label: "Pitch Deck Outline",
+      "A slide-by-slide pitch deck — ONE markdown H2 per slide (Title, Problem, Solution, Why Partner With Us, Market, Mutual Value, Proof, The Ask, Next Steps). 2-4 bullet talking points per slide. Presenter-ready, not paragraphs.",
+    label: "Partnership Pitch Deck",
   },
   executive_summary: {
     guidance:
@@ -55,7 +56,7 @@ export const PARTNERSHIP_ASSET_CATALOG = {
   },
   press_release: {
     guidance:
-      "A standard joint press release: headline, dateline, lead paragraph (who/what/why), 1-2 supporting paragraphs, a clearly-LABELED placeholder quote from each company, boilerplate 'About' blurbs, and a contact line. Never fabricate quotes or metrics.",
+      "A standard joint press release: headline, dateline, lead paragraph (who/what/why), 1-2 supporting paragraphs, approved quotations only when an exact quotation is supplied, boilerplate 'About' blurbs, and a contact line. Never fabricate quotes or metrics.",
     label: "Joint Press Release",
   },
   partnership_faq: {
@@ -207,24 +208,33 @@ const constructAsset = async (input: AssetInput | AssetEditInput, ctx: Partnersh
       return { ...block, evidenceId };
     }) })) };
   };
+  const format = ASSET_FORMATS[input.assetType];
+  const formatSchema = AssetEvidencePlanSchema.extend({ sections: z.array(AssetEvidencePlanSchema.shape.sections.element.extend({ heading: z.enum(format.headings) })).min(1).max(format.maxSections) });
   const { object } = await ctx.generateObject({
     feature: "currentMarkdown" in input ? "partnershipAssetEdit" : "partnershipAssets",
     maxTokens: assetOutputTokens(input.bounds),
     messages: [{ role: "user", content: JSON.stringify({
-      assetType: input.assetType, structureGuidance: entry.guidance,
+      assetType: input.assetType, structureGuidance: entry.guidance, format: ASSET_FORMATS[input.assetType],
       sources: promptSources, hypotheticalAllowed, current: "currentMarkdown" in input ? { markdown: input.currentMarkdown, instructions: input.instructions } : undefined,
     }) }],
     model: ctx.model ?? DEFAULT_MODEL,
-    schema: z.toJSONSchema(AssetEvidencePlanSchema),
+    schema: z.toJSONSchema(formatSchema),
     systemPrompt: `${SYSTEM}
 CONSTRUCTION CONTRACT OVERRIDES PROSE FORMATTING INSTRUCTIONS:
-Return sections containing source references, proposed actions, and neutral questions. You CANNOT author factual text, source quotations, citations, metrics, titles or factual headings. Select source reference IDs (e1, e2, etc.); the server inserts their exact text and provenance. A source reference is a reported quotation, never independent verification. Preserve context and uncertainty; do not cherry-pick an outdated goal or an assistant's speculation as a confirmed outcome. Select the strongest relevant primary records, avoiding duplicate summaries.
+Return sections containing source references, proposed actions, and neutral questions. You CANNOT author factual text, source quotations, citations, metrics, titles or factual headings. Select source reference IDs (e1, e2, etc.); the server inserts their exact text and provenance. A source reference is a reported quotation, never independent verification. Preserve context and uncertainty; do not cherry-pick an outdated goal or an assistant's speculation as a confirmed outcome. Select the strongest relevant primary records. Each source reference may appear only once in the whole document. Never include conversational setup such as a dream-partner declaration, intake instructions, or obsolete-goal correction chatter when the current fact is already supplied. Prefer concise business facts. Follow FORMAT headings and limits; do not force every document into a pitch or diligence checklist. An email must read as a short message with one ask. A guide must contain actionable selling and support guidance. Do not use discovery questions as a substitute for the requested deliverable; put unanswered preparation questions in missingInputs. Legal documents must remain explicitly non-binding drafts.
 Use proposal blocks only for genuinely proposed actions, without factual presuppositions, claims of existing capability, agreed terms or guaranteed results. Use question blocks for neutral requests for missing information. These blocks will be visibly labeled and still require semantic review. Never put a factual assertion in a proposal/question to bypass references. Unknown information goes in missingInputs; it must not be invented. Use the allowed neutral section headings. Do not pad documents to fill templates or repeat the same evidence. Existing document text is editing context, NOT evidence. A hypothetical block is permitted ONLY when hypotheticalAllowed=true: it is visibly fictional and must never be presented as real proof or an actual result. Otherwise do not create hypothetical blocks.`,
     toolDescription: "Select source records and compose explicitly labeled proposals and questions.",
     toolName: "partnership_asset",
     validate: raw => {
       const plan = bindPlan(raw);
+      const format = ASSET_FORMATS[input.assetType];
+      const selected = plan.sections.flatMap(section => section.blocks.filter(block => block.kind === "source").map(block => block.evidenceId));
+      if (new Set(selected).size !== selected.length) throw new Error("Use each factual source record only once; remove repeated evidence.");
+      if (plan.sections.length > format.maxSections || plan.sections.flatMap(section => section.blocks).length > format.maxBlocks) throw new Error("Document exceeds the format's section or block limit; compose a concise complete version.");
+      if (plan.sections.some(section => !(format.headings as readonly string[]).includes(section.heading))) throw new Error("Choose headings from this document format's allowed headings.");
       const rendered = renderAssetEvidencePlan(sources, plan, hypotheticalAllowed);
+      const words = plan.sections.flatMap(section => section.blocks.map(block => block.kind === "source" ? evidence.find(record => record.id === block.evidenceId)?.text ?? "" : block.text)).join(" ").split(/\s+/u).length;
+      if (words > format.maxWords) throw new Error("Document exceeds its format word limit; select fewer facts and shorten proposed actions without dropping necessary qualifications.");
       if (rendered.markdown.length > input.bounds.markdownMax) throw new Error("Source-backed asset exceeds maximum document size");
       return plan;
     },

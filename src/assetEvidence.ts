@@ -1,3 +1,4 @@
+import { ASSET_FORMATS, type AssetFormatType } from "./assetFormats";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 
@@ -72,7 +73,7 @@ export const buildAssetEvidence = (sources: readonly AssetEvidenceSource[]) => {
   });
 };
 
-export const ASSET_EVIDENCE_HEADINGS = ["Overview", "Opportunity", "Audience", "Offer", "Roles and responsibilities", "Positioning", "Talking points", "Discovery questions", "Proof and track record", "Commercial terms", "Distribution", "Timeline", "Success measures", "Risks and open decisions", "Next steps", "Contact"] as const;
+export const ASSET_EVIDENCE_HEADINGS = ["Overview", "Opportunity", "Audience", "Offer", "Roles and responsibilities", "Positioning", "Talking points", "Discovery questions", "Proof and track record", "Commercial terms", "Distribution", "Timeline", "Success measures", "Risks and open decisions", "Next steps", "Contact", "Recommendation", "Decision", "Benefits", "Objection handling", "Objectives", "Progress", "Results", "Opening", "Resources", "Support", "Scope", "Investment", "Expected return", "Deliverables", "Background", "Lessons", "Announcement", "About", "Parties", "Purpose", "Confidentiality", "Exclusivity", "Non-binding status", "Signatures", "Term", "Intellectual property", "Termination"] as const;
 const Text = z.string().trim().min(1).max(1200).refine(value => !/[\r\n<>]/u.test(value), "Use plain single-line text");
 export const AssetEvidencePlanSchema = z.object({
   sections: z.array(z.object({
@@ -157,15 +158,42 @@ export type AssetPresentationSource = {
   provenance: string;
   excerpts: string[];
 };
-export const presentAssetEvidenceDocument = (sources: readonly AssetEvidenceSource[], markdown: string, document: AssetEvidenceDocument) => {
+/** Remove conversational framing only through fixed, meaning-preserving prefixes.
+ * Unrecognized statements stay verbatim; numbers, negation and qualifiers are never rewritten. */
+const sourceStatement = (text: string) => {
+  const rules: readonly [RegExp, string][] = [
+    [/^My named dream partner is /u, "Target partner: "],
+    [/^I am /u, "Background: "],
+    [/^We sell /u, "Offer: "],
+    [/^I want /u, "Goal: "],
+    [/^I have done /u, "Track record: "],
+    [/^I will not /u, "Boundary: will not "],
+    [/^My ([^.!?]+?) (?:is|are) /u, "$1: "],
+    [/^Our /u, ""],
+  ];
+  for (const [pattern, replacement] of rules) {
+    if (pattern.test(text)) {
+      const statement = text.replace(pattern, replacement);
+      return statement.charAt(0).toLocaleUpperCase() + statement.slice(1);
+    }
+  }
+  return text;
+};
+export type AssetPresentationOptions = { assetType?: AssetFormatType };
+export const presentAssetEvidenceDocument = (sources: readonly AssetEvidenceSource[], markdown: string, document: AssetEvidenceDocument, options: AssetPresentationOptions = {}) => {
   const validated = validateAssetEvidenceDocument(sources, markdown, document).evidenceDocument;
   const records = new Map(validated.citations.map(record => [record.id, record]));
   const references = new Map<string, AssetPresentationSource>();
-  const sections = validated.plan.sections.map(section => {
-    const blocks = section.blocks.map(block => {
+  const format = options.assetType ? ASSET_FORMATS[options.assetType] : undefined;
+  const seen = new Set<string>();
+  const sections = validated.plan.sections.flatMap(section => {
+    const blocks = section.blocks.flatMap(block => {
+      const key = block.kind === "source" ? `source:${records.get(block.evidenceId)?.text}` : `${block.kind}:${block.text}`;
+      if (seen.has(key)) return [];
+      seen.add(key);
       if (block.kind !== "source") {
         const label = block.kind === "proposal" ? "Proposed" : block.kind === "question" ? "To confirm" : "Hypothetical example (fictional, not an actual result)";
-        return `**${label}:** ${plain(block.text)}`;
+        return `**${label}:** ${plain(block.kind === "proposal" ? block.text.replace(/^Propose (?:that )?/iu, "") : block.text)}`;
       }
       const record = records.get(block.evidenceId);
       if (!record) throw new Error("Missing validated source record");
@@ -175,11 +203,13 @@ export const presentAssetEvidenceDocument = (sources: readonly AssetEvidenceSour
         references.set(record.sourceId, reference);
       }
       if (!reference.excerpts.includes(record.text)) reference.excerpts.push(record.text);
-      return `${plain(record.text)} [${reference.number}]`;
+      return `${plain(sourceStatement(record.text))} [${reference.number}]`;
     });
-    return `## ${section.heading}\n\n${blocks.join("\n\n")}`;
+    if (!blocks.length) return [];
+    return format?.mode === "email" || format?.mode === "announcement" ? blocks.join("\n\n") : `## ${section.heading}\n\n${blocks.join("\n\n")}`;
   });
+  if (format?.mode === "legal") sections.unshift("**Non-binding draft — for negotiation and legal review.**");
   const publicSources = [...references.values()];
-  if (publicSources.length) sections.push(`## Sources\n\n${publicSources.map(source => `${source.number}. ${plain(source.label)} — ${plain(source.provenance)}`).join("\n\n")}`);
+  if (publicSources.length) sections.push(`## Sources\n\n${publicSources.map(source => `[${source.number}] ${plain(source.label)} — ${plain(source.provenance)}`).join("\n\n")}`);
   return { markdown: sections.join("\n\n"), sources: publicSources, missingInputs: [...validated.plan.missingInputs] };
 };
