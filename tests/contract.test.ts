@@ -403,7 +403,7 @@ describe("draftPartnershipAsset", () => {
     expect(calls[0]?.systemPrompt).toContain("Factual integrity takes precedence");
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
     expect(payload.assetType).toBe("deal_memo");
-    expect(payload.evidence[0].text).toContain("healthcare platform");
+    expect(payload.sources[0].records[0].text).toContain("healthcare platform");
     expect(calls[0]?.systemPrompt).toContain("primary evidence");
     expect(calls[0]?.systemPrompt).toContain("Do not infer hours per pricing tier");
     expect(calls[0]?.maxTokens).toBeGreaterThan(4500);

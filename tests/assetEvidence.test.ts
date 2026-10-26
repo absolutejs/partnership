@@ -47,3 +47,15 @@ test("JSONB key reordering preserves a valid construction record",()=>{
  const reorderedSources=sources.map(source=>({content:source.content,label:source.label,kind:source.kind,id:source.id}));
  expect(()=>validateAssetEvidenceDocument(reorderedSources,result.markdown,reordered)).not.toThrow();
 });
+
+test("draft request sends compact references rather than repeating integrity metadata", async()=>{
+ const {draftPartnershipAsset}=await import("../src/assets");
+ const result=await draftPartnershipAsset({assetType:"deal_memo",bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources,match:{},profile:{}},{generateObject:async request=>{
+   const payload=JSON.parse(request.messages[0]!.content);
+   expect(payload.sources[0].records[0].reference).toBe("e1");
+   expect(request.messages[0]!.content).not.toContain("sourceDigest");
+   expect(()=>request.validate({sections:[{heading:"Overview",blocks:[{kind:"source",evidenceId:"e999999"}]}],missingInputs:[]})).toThrow();
+   return {object:request.validate({sections:[{heading:"Overview",blocks:[{kind:"source",evidenceId:"e1"}]}],missingInputs:[]})};
+ }});
+ expect(result.evidenceDocument.citations[0]?.id).toBe(records[0]?.id);
+});

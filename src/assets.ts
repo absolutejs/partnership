@@ -195,23 +195,34 @@ const constructAsset = async (input: AssetInput | AssetEditInput, ctx: Partnersh
   const sources = evidenceSources(input);
   const evidence = buildAssetEvidence(sources);
   const entry = PARTNERSHIP_ASSET_CATALOG[input.assetType];
+  const references = new Map(evidence.map((record, index) => [`e${index + 1}`, record.id]));
+  const promptSources = sources.map(source => ({ id: source.id, label: source.label, kind: source.kind, records: evidence.flatMap((record,index) => record.sourceId === source.id ? [{ reference: `e${index + 1}`, location: record.pointer, text: record.text }] : []) }));
+  const bindPlan = (raw: unknown) => {
+    const plan = AssetEvidencePlanSchema.parse(raw);
+    return { ...plan, sections: plan.sections.map(section => ({ ...section, blocks: section.blocks.map(block => {
+      if (block.kind !== "source") return block;
+      const evidenceId = references.get(block.evidenceId);
+      if (!evidenceId) throw new Error("Unknown asset source reference");
+      return { ...block, evidenceId };
+    }) })) };
+  };
   const { object } = await ctx.generateObject({
     feature: "currentMarkdown" in input ? "partnershipAssetEdit" : "partnershipAssets",
     maxTokens: assetOutputTokens(input.bounds),
     messages: [{ role: "user", content: JSON.stringify({
       assetType: input.assetType, structureGuidance: entry.guidance,
-      evidence, current: "currentMarkdown" in input ? { markdown: input.currentMarkdown, instructions: input.instructions } : undefined,
+      sources: promptSources, current: "currentMarkdown" in input ? { markdown: input.currentMarkdown, instructions: input.instructions } : undefined,
     }) }],
     model: ctx.model ?? DEFAULT_MODEL,
     schema: z.toJSONSchema(AssetEvidencePlanSchema),
     systemPrompt: `${SYSTEM}
 CONSTRUCTION CONTRACT OVERRIDES PROSE FORMATTING INSTRUCTIONS:
-Return sections containing source references, proposed actions, and neutral questions. You CANNOT author factual text, source quotations, citations, metrics, titles or factual headings. Select source evidence IDs; the server inserts their exact text and provenance. A source reference is a reported quotation, never independent verification. Preserve context and uncertainty; do not cherry-pick an outdated goal or an assistant's speculation as a confirmed outcome. Select the strongest relevant primary records, avoiding duplicate summaries.
+Return sections containing source references, proposed actions, and neutral questions. You CANNOT author factual text, source quotations, citations, metrics, titles or factual headings. Select source reference IDs (e1, e2, etc.); the server inserts their exact text and provenance. A source reference is a reported quotation, never independent verification. Preserve context and uncertainty; do not cherry-pick an outdated goal or an assistant's speculation as a confirmed outcome. Select the strongest relevant primary records, avoiding duplicate summaries.
 Use proposal blocks only for genuinely proposed actions, without factual presuppositions, claims of existing capability, agreed terms or guaranteed results. Use question blocks for neutral requests for missing information. These blocks will be visibly labeled and still require semantic review. Never put a factual assertion in a proposal/question to bypass references. Unknown information goes in missingInputs; it must not be invented. Use the allowed neutral section headings. Do not pad documents to fill templates or repeat the same evidence. Existing document text is editing context, NOT evidence.`,
     toolDescription: "Select source records and compose explicitly labeled proposals and questions.",
     toolName: "partnership_asset",
     validate: raw => {
-      const plan = AssetEvidencePlanSchema.parse(raw);
+      const plan = bindPlan(raw);
       const rendered = renderAssetEvidencePlan(sources, plan);
       if (rendered.markdown.length > input.bounds.markdownMax) throw new Error("Source-backed asset exceeds maximum document size");
       return plan;
