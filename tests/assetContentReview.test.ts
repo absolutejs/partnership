@@ -8,6 +8,8 @@ const input={assetType:'qbr' as const,sources,document:rendered.evidenceDocument
 test('reviews source-backed blocks in their section context and gates required inputs',async()=>{
  const review=await reviewAssetContent(input,{generateObject:async req=>{
   const data=JSON.parse(req.messages[0]!.content);
+  expect(data).not.toHaveProperty('sources');
+  expect(data).not.toHaveProperty('evidence');
   expect(data.blocks[0]).toMatchObject({heading:'Results',text:'Our target is 137 new customers.'});
   expect(req.systemPrompt).toContain('Results/Progress must not present goals');
   expect(()=>req.validate({blocks:[],documentIssues:[],requiredInputs:[]})).toThrow('every block');
@@ -25,4 +27,14 @@ test('policy rejects operative defaults and unconfirmed announcements even when 
  expect(ASSET_CONTENT_POLICY).toContain('even when labeled Proposed');
  expect(ASSET_CONTENT_POLICY).toContain('not a collection of intake fields');
  expect(ASSET_CONTENT_POLICY).toContain('stale correction chatter');
+});
+
+test('unselected intake history is not sent to the paid reviewer',async()=>{
+ const largeSources=[...sources,{id:'unselected',label:'Old conversation',content:'UNSELECTED_PRIVATE_CONTEXT '.repeat(10000)}];
+ const doc=renderAssetEvidencePlan(largeSources,{sections:[{heading:'Results',blocks:[{kind:'source',evidenceId:fact.id}]}],missingInputs:[]});
+ await reviewAssetContent({...input,sources:largeSources,document:doc.evidenceDocument,markdown:doc.markdown},{generateObject:async req=>{
+  expect(req.messages[0]!.content).not.toContain('UNSELECTED_PRIVATE_CONTEXT');
+  expect(req.messages[0]!.content.length).toBeLessThan(5000);
+  return {object:req.validate({blocks:[{index:0,issue:null}],documentIssues:[],requiredInputs:[]})};
+ }});
 });
