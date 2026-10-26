@@ -11,7 +11,9 @@ for(const assetType of PARTNERSHIP_ASSET_TYPES){
    expect(payload.format).toEqual(format);
    expect(JSON.stringify(req.schema)).toContain(format.headings[0]);
    const block={kind:'source',evidenceId:'e1'};
-   expect(()=>req.validate({sections:[{heading:format.headings[0],blocks:[block]},{heading:format.headings[0],blocks:[block]}],missingInputs:[]})).toThrow('only once');
+   const deduped=req.validate({sections:[{heading:format.headings[0],blocks:[block]},{heading:format.headings[0],blocks:[block]}],missingInputs:[]});
+   expect(deduped.sections).toHaveLength(1);
+   expect(deduped.sections[0].blocks).toHaveLength(1);
    const perSection=Math.max(1,Math.floor(format.maxBlocks/format.maxSections));
    expect(payload.compositionBudget.maxBlocksPerSection).toBe(perSection);
    expect(JSON.stringify(req.schema)).toContain('\"maxItems\":'+perSection);

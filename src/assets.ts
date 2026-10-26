@@ -201,12 +201,15 @@ const constructAsset = async (input: AssetInput | AssetEditInput, ctx: Partnersh
   const promptSources = sources.map(source => ({ id: source.id, label: source.label, kind: source.kind, records: evidence.flatMap((record,index) => record.sourceId === source.id ? [{ reference: `e${index + 1}`, location: record.pointer, text: record.text }] : []) }));
   const bindPlan = (raw: unknown) => {
     const plan = AssetEvidencePlanSchema.parse(raw);
-    return { ...plan, sections: plan.sections.map(section => ({ ...section, blocks: section.blocks.map(block => {
-      if (block.kind !== "source") return block;
+    const seen = new Set<string>();
+    return { ...plan, sections: plan.sections.map(section => ({ ...section, blocks: section.blocks.flatMap<(typeof section.blocks)[number]>(block => {
+      if (block.kind !== "source") return [block];
       const evidenceId = references.get(block.evidenceId);
       if (!evidenceId) throw new Error("Unknown asset source reference");
-      return { ...block, evidenceId };
-    }) })) };
+      if (seen.has(evidenceId)) return [];
+      seen.add(evidenceId);
+      return [{ ...block, evidenceId }];
+    }) })).filter(section => section.blocks.length > 0) };
   };
   const format = ASSET_FORMATS[input.assetType];
   // Express the composition budget in the provider schema, not only in a
@@ -235,8 +238,6 @@ Use proposal blocks only for genuinely proposed actions, without factual presupp
     validate: raw => {
       const plan = bindPlan(formatSchema.parse(raw));
       const format = ASSET_FORMATS[input.assetType];
-      const selected = plan.sections.flatMap(section => section.blocks.filter(block => block.kind === "source").map(block => block.evidenceId));
-      if (new Set(selected).size !== selected.length) throw new Error("Use each factual source record only once; remove repeated evidence.");
       if (plan.sections.length > format.maxSections || plan.sections.flatMap(section => section.blocks).length > format.maxBlocks) throw new Error("Document exceeds the format's section or block limit; compose a concise complete version.");
       if (plan.sections.some(section => !(format.headings as readonly string[]).includes(section.heading))) throw new Error("Choose headings from this document format's allowed headings.");
       const rendered = renderAssetEvidencePlan(sources, plan, hypotheticalAllowed);
