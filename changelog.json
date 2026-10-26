@@ -3,6 +3,20 @@
   "name": "@absolutejs/partnership",
   "releases": [
     {
+      "version": "0.3.1",
+      "date": "2026-10-25",
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Canonicalize object keys for source and construction integrity so PostgreSQL JSONB persistence preserves valid evidence without weakening tamper detection.",
+          "symbols": [
+            "renderAssetEvidencePlan",
+            "validateAssetEvidenceDocument"
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.3.0",
       "date": "2026-10-25",
       "changes": [

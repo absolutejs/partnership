@@ -40,3 +40,10 @@ test("scenario math is server-computed and rejects invented amounts or incompati
  expect(()=>calculateAssetScenario({...input,clientPrice:{...input.clientPrice,currency:"EUR"}})).toThrow();
  expect(()=>calculateAssetScenario({...input,assumptions:[]})).toThrow();
 });
+
+test("JSONB key reordering preserves a valid construction record",()=>{
+ const result=renderAssetEvidencePlan(sources,plan);
+ const reordered=JSON.parse(JSON.stringify(result.evidenceDocument),(_key,value)=>value && !Array.isArray(value) && typeof value==='object' ? Object.fromEntries(Object.entries(value).reverse()) : value);
+ const reorderedSources=sources.map(source=>({content:source.content,label:source.label,kind:source.kind,id:source.id}));
+ expect(()=>validateAssetEvidenceDocument(reorderedSources,result.markdown,reordered)).not.toThrow();
+});

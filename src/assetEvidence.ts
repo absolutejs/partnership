@@ -21,6 +21,13 @@ export type AssetEvidenceRecord = {
   text: string;
 };
 const digest = (text: string) => createHash("sha256").update(text).digest("hex");
+// JSONB reorders object keys. Integrity checks must bind values, not insertion order.
+const canonical = (value: unknown): string => {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (value !== null && typeof value === "object") return `{${Object.entries(value).filter(([,item]) => item !== undefined).sort(([left],[right]) => left.localeCompare(right)).map(([key,item]) => `${JSON.stringify(key)}:${canonical(item)}`).join(",")}}`;
+  return JSON.stringify(value) ?? "null";
+};
+
 const escapePointer = (text: string) => text.replaceAll("~", "~0").replaceAll("/", "~1");
 const provenance = (kind?: string) => kind === "match" ? "Unverified research / match record" : kind === "intake" ? "Recorded intake information" : kind === "operator" ? "Operator-provided information" : kind === "profile" ? "Profile record" : "Supplied source";
 const leaves = (value: unknown, pointer = ""): { pointer: string; text: string }[] => {
@@ -83,13 +90,13 @@ export const renderAssetEvidencePlan = (sources: readonly AssetEvidenceSource[],
     citations.set(record.id, record);
     return `> ${plain(record.text).replaceAll("\n", "\n> ")}\n\nSource: ${plain(record.sourceLabel)} · ${record.provenance} · ${plain(record.pointer || "source text")} · reference ${record.id.slice(0, 12)}`;
   }).join("\n\n")}`).join("\n\n") + (plan.missingInputs.length ? `\n\n## Operator inputs needed\n${plan.missingInputs.map(text => `- ${plain(text)}`).join("\n")}` : "");
-  const evidenceDocument: AssetEvidenceDocument = { version: 1, sourceDigest: digest(JSON.stringify(sources)), plan, citations: [...citations.values()], markdownDigest: digest(markdown) };
+  const evidenceDocument: AssetEvidenceDocument = { version: 1, sourceDigest: digest(canonical(sources)), plan, citations: [...citations.values()], markdownDigest: digest(markdown) };
   return { markdown, evidenceDocument };
 };
 /** Verify persisted content, including after recovery and before export. */
 export const validateAssetEvidenceDocument = (sources: readonly AssetEvidenceSource[], markdown: string, document: AssetEvidenceDocument) => {
   const rebuilt = renderAssetEvidencePlan(sources, document.plan);
-  if (document.version !== 1 || JSON.stringify(rebuilt.evidenceDocument) !== JSON.stringify(document) || rebuilt.markdown !== markdown)
+  if (document.version !== 1 || canonical(rebuilt.evidenceDocument) !== canonical(document) || rebuilt.markdown !== markdown)
     throw new Error("Asset document no longer matches its source-backed construction");
   return rebuilt;
 };
