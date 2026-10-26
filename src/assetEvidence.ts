@@ -73,7 +73,7 @@ export const buildAssetEvidence = (sources: readonly AssetEvidenceSource[]) => {
   });
 };
 
-export const ASSET_EVIDENCE_HEADINGS = ["Overview", "Opportunity", "Audience", "Offer", "Roles and responsibilities", "Positioning", "Talking points", "Discovery questions", "Proof and track record", "Commercial terms", "Distribution", "Timeline", "Success measures", "Risks and open decisions", "Next steps", "Contact", "Recommendation", "Baseline", "Decision", "Benefits", "Objection handling", "Objectives", "Progress", "Results", "Opening", "Resources", "Support", "Scope", "Investment", "Expected return", "Deliverables", "Background", "Lessons", "Announcement", "About", "Parties", "Purpose", "Confidentiality", "Exclusivity", "Non-binding status", "Signatures", "Term", "Intellectual property", "Termination"] as const;
+export const ASSET_EVIDENCE_HEADINGS = ["Overview", "Opportunity", "Audience", "Offer", "Roles and responsibilities", "Positioning", "Talking points", "Discovery questions", "Proof and track record", "Commercial terms", "Distribution", "Timeline", "Success measures", "Risks and open decisions", "Next steps", "Contact", "Recommendation", "Baseline", "Decision", "Benefits", "Objection handling", "Objectives", "Progress", "Results", "Opening", "Resources", "Support", "Scope", "Investment", "Expected return", "Deliverables", "Background", "Lessons", "Headline", "Announcement", "About", "Parties", "Purpose", "Confidentiality", "Exclusivity", "Non-binding status", "Signatures", "Term", "Intellectual property", "Termination"] as const;
 const Text = z.string().trim().min(1).max(1200).refine(value => !/[\r\n<>]/u.test(value), "Use plain single-line text");
 export const AssetEvidencePlanSchema = z.object({
   sections: z.array(z.object({
@@ -233,6 +233,7 @@ export const presentAssetEvidenceDocument = (sources: readonly AssetEvidenceSour
       return `${plain(format?.mode === "email" ? record.text : sourceStatement(record.text))} [${reference.number}]`;
     });
     if (!blocks.length) return [];
+    if (format?.mode === "announcement" && section.heading === "Headline") return `## ${blocks.join(" ")}`;
     return format?.mode === "email" || format?.mode === "announcement" ? blocks.join("\n\n") : `## ${section.heading}\n\n${blocks.join("\n\n")}`;
   });
   if (format?.mode === "email") sections.unshift("**Suggested email — review before sending.**");

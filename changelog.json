@@ -5,6 +5,25 @@
 		{
 			"changes": [
 				{
+					"kind": "fixed",
+					"summary": "Compose source-cited announcement headlines and recognize already supplied concise operator facts so review requests missing facts rather than writing tasks or optional sections.",
+					"symbols": [
+						"ASSET_FORMATS",
+						"ASSET_EVIDENCE_HEADINGS",
+						"AssetEvidencePlanSchema",
+						"ASSET_CONTENT_POLICY",
+						"reviewAssetContent",
+						"draftPartnershipAsset",
+						"presentAssetEvidenceDocument"
+					]
+				}
+			],
+			"date": "2026-10-26",
+			"version": "0.6.2"
+		},
+		{
+			"changes": [
+				{
 					"kind": "internal",
 					"summary": "Document the mandatory entailment and readiness gates for authored announcements, checkpoint binding, and bounded review context."
 				}
