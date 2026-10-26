@@ -1,6 +1,6 @@
 import {expect,test} from 'bun:test';
 import {reviewAssetContent,assetContentIssues,ASSET_CONTENT_POLICY} from '../src/assetContentReview';
-import {buildAssetEvidence,renderAssetEvidencePlan} from '../src/assetEvidence';
+import {presentAssetEvidenceDocument,buildAssetEvidence,renderAssetEvidencePlan} from '../src/assetEvidence';
 const sources=[{id:'intake',label:'Intake',content:'Our target is 137 new customers.'}];
 const fact=buildAssetEvidence(sources)[0]!;
 const rendered=renderAssetEvidencePlan(sources,{sections:[{heading:'Results',blocks:[{kind:'source',evidenceId:fact.id}]}],missingInputs:[]});
@@ -45,4 +45,14 @@ test('legacy legal proposals remain blocked even if the reviewer approves them',
  const doc=renderAssetEvidencePlan([],{sections:[{heading:'Termination',blocks:[{kind:'proposal',text:'Either party may terminate on 14 days notice.'}]}],missingInputs:[]});
  const result=await reviewAssetContent({assetType:'term_sheet',sources:[],document:doc.evidenceDocument,markdown:doc.markdown},{generateObject:async req=>({object:req.validate({blocks:[{index:0,issue:null}],documentIssues:[],requiredInputs:[]})})});
  expect(assetContentIssues(result)[0]).toContain('was not supplied as a source');
+});
+test('announcement paragraphs preserve cited evidence and readable prose without implying verification',()=>{
+ const record=buildAssetEvidence(sources)[0]!;
+ const doc=renderAssetEvidencePlan(sources,{sections:[{heading:'Announcement',blocks:[{kind:'statement',text:'The company targets 137 new customers.',evidenceIds:[record.id]}]}],missingInputs:[]});
+ expect(doc.evidenceDocument.citations[0]?.text).toBe('Our target is 137 new customers.');
+ expect(()=>renderAssetEvidencePlan(sources,{sections:[{heading:'Announcement',blocks:[{kind:'statement',text:'Unsupported.',evidenceIds:['invented']}]}],missingInputs:[]})).toThrow('Unknown');
+ const display=presentAssetEvidenceDocument(sources,doc.markdown,doc.evidenceDocument,{assetType:'press_release'});
+ expect(display.markdown).toContain('The company targets 137 new customers');
+ expect(display.markdown).not.toContain('To confirm');
+ expect(display.markdown).toContain('[1]');
 });

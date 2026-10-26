@@ -83,6 +83,7 @@ export const AssetEvidencePlanSchema = z.object({
       z.object({ kind: z.literal("proposal"), text: Text }).strict(),
       z.object({ kind: z.literal("question"), text: Text }).strict(),
       z.object({ kind: z.literal("hypothetical"), text: Text }).strict(),
+      z.object({ kind: z.literal("statement"), text: Text, evidenceIds: z.array(z.string().min(1)).min(1).max(8) }).strict(),
     ])).min(1).max(12),
   }).strict()).min(1).max(16),
   missingInputs: z.array(Text).max(20),
@@ -107,6 +108,15 @@ export const renderAssetEvidencePlan = (sources: readonly AssetEvidenceSource[],
     if (block.kind === "hypothetical") {
       if (!hypotheticalAllowed) throw new Error("A fictional example requires explicit host authorization");
       return `**Hypothetical example (fictional, not an actual result):** ${plain(block.text)}`;
+    }
+    if (block.kind === "statement") {
+      const supporting = block.evidenceIds.map(id => {
+        const record = ledger.get(id);
+        if (!record) throw new Error("Unknown or stale statement evidence reference");
+        citations.set(record.id, record);
+        return record;
+      });
+      return `${plain(block.text)}\n\nSources: ${supporting.map(record => `${plain(record.sourceLabel)} · reference ${record.id.slice(0,12)}`).join("; ")}`;
     }
     if (block.kind !== "source") return `**${block.kind === "proposal" ? "Proposed" : "To confirm"}:** ${plain(block.text)}`;
     const record = ledger.get(block.evidenceId);
@@ -193,6 +203,20 @@ export const presentAssetEvidenceDocument = (sources: readonly AssetEvidenceSour
       const key = block.kind === "source" ? `source:${records.get(block.evidenceId)?.text}` : `${block.kind}:${block.text}`;
       if (seen.has(key)) return [];
       seen.add(key);
+      if (block.kind === "statement") {
+        const numbers = block.evidenceIds.map(id => {
+          const record = records.get(id);
+          if (!record) throw new Error("Missing validated statement source");
+          let reference = references.get(record.sourceId);
+          if (!reference) {
+            reference = {number: references.size + 1, label: record.sourceLabel, provenance: record.provenance, excerpts: []};
+            references.set(record.sourceId, reference);
+          }
+          if (!reference.excerpts.includes(record.text)) reference.excerpts.push(record.text);
+          return reference.number;
+        });
+        return `${plain(block.text)} ${[...new Set(numbers)].map(number => `[${number}]`).join(" ")}`;
+      }
       if (block.kind !== "source") {
         const label = block.kind === "proposal" ? "Proposed" : block.kind === "question" ? "To confirm" : "Hypothetical example (fictional, not an actual result)";
         const text = block.kind === "proposal" ? block.text.replace(/^Propose (?:that )?/iu, "") : block.text;

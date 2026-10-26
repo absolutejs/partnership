@@ -1,363 +1,382 @@
 {
-	"contract": 1,
-	"name": "@absolutejs/partnership",
-	"releases": [
-		{
-			"changes": [
-				{
-					"kind": "changed",
-					"summary": "Classify source use during generation and reject goals or baselines as results, stale corrections, and business background as operative legal terms before constructing the unchanged evidence document.",
-					"symbols": [
-						"draftPartnershipAsset",
-						"editPartnershipAsset",
-						"ASSET_FORMATS",
-						"ASSET_EVIDENCE_HEADINGS",
-						"AssetEvidencePlanSchema"
-					]
-				}
-			],
-			"date": "2026-10-26",
-			"version": "0.5.3"
-		},
-		{
-			"changes": [
-				{
-					"kind": "fixed",
-					"summary": "Separate factual input requests from system writing corrections, prohibit unsupplied legal proposal blocks, and block legacy legal defaults even if a model reviewer approves them.",
-					"symbols": [
-						"ASSET_CONTENT_POLICY",
-						"reviewAssetContent",
-						"draftPartnershipAsset",
-						"editPartnershipAsset"
-					]
-				}
-			],
-			"date": "2026-10-26",
-			"version": "0.5.2"
-		},
-		{
-			"changes": [
-				{
-					"kind": "fixed",
-					"summary": "Bound document review context to selected validated blocks instead of repeating the entire intake evidence ledger; retain provenance and section context.",
-					"symbols": [
-						"reviewAssetContent",
-						"ASSET_CONTENT_POLICY"
-					]
-				}
-			],
-			"date": "2026-10-26",
-			"version": "0.5.1"
-		},
-		{
-			"changes": [
-				{
-					"kind": "added",
-					"summary": "Review source-backed documents for section relevance, required inputs, announcement confirmation and supplied legal terms before readiness.",
-					"symbols": [
-						"reviewAssetContent",
-						"assetContentIssues",
-						"ASSET_CONTENT_POLICY",
-						"AssetContentReview"
-					]
-				}
-			],
-			"date": "2026-10-26",
-			"version": "0.5.0"
-		},
-		{
-			"changes": [
-				{
-					"kind": "fixed",
-					"summary": "Deduplicate identical selected evidence references and remove sections left empty before constructing the document, without changing source text or spending a model repair call.",
-					"symbols": [
-						"draftPartnershipAsset",
-						"editPartnershipAsset"
-					]
-				}
-			],
-			"date": "2026-10-26",
-			"version": "0.4.6"
-		},
-		{
-			"changes": [
-				{
-					"kind": "fixed",
-					"summary": "Keep legal draft status in the fixed renderer notice instead of inviting generated assertions about enforceability or obligations.",
-					"symbols": [
-						"ASSET_FORMATS",
-						"draftPartnershipAsset",
-						"AssetEvidencePlanSchema"
-					]
-				}
-			],
-			"date": "2026-10-26",
-			"version": "0.4.5"
-		},
-		{
-			"changes": [
-				{
-					"kind": "fixed",
-					"summary": "Constrain per-section block budgets in provider schemas so compact asset formats cannot request more blocks than their total composition limit; return exact word counts for repair.",
-					"symbols": [
-						"draftPartnershipAsset",
-						"editPartnershipAsset"
-					]
-				}
-			],
-			"date": "2026-10-26",
-			"version": "0.4.4"
-		},
-		{
-			"changes": [
-				{
-					"kind": "fixed",
-					"summary": "Keep source-backed email statements in the sender voice and label the draft once, while rendering founder and availability facts as neutral business fields in other documents.",
-					"symbols": [
-						"presentAssetEvidenceDocument"
-					]
-				}
-			],
-			"date": "2026-10-26",
-			"version": "0.4.3"
-		},
-		{
-			"changes": [
-				{
-					"kind": "added",
-					"summary": "Define per-format structured generation contracts for all 20 document types, with enforceable section, word and repetition limits.",
-					"symbols": [
-						"ASSET_FORMATS",
-						"AssetFormatType",
-						"AssetPresentationOptions",
-						"AssetEvidencePlanSchema",
-						"ASSET_EVIDENCE_HEADINGS"
-					]
-				},
-				{
-					"kind": "changed",
-					"summary": "Present source-backed facts once with neutral conversational framing, stable citation numbers, email-specific layout and explicit non-binding legal draft labels while preserving original evidence and qualifiers.",
-					"symbols": [
-						"presentAssetEvidenceDocument",
-						"draftPartnershipAsset",
-						"editPartnershipAsset"
-					]
-				}
-			],
-			"date": "2026-10-26",
-			"version": "0.4.2"
-		},
-		{
-			"changes": [
-				{
-					"kind": "added",
-					"summary": "Render validated assets for readers with numbered source notes and clean excerpts while retaining unchanged source-proof metadata and keeping operator inputs out of exported content.",
-					"symbols": [
-						"presentAssetEvidenceDocument",
-						"AssetPresentationSource"
-					]
-				}
-			],
-			"date": "2026-10-26",
-			"version": "0.4.1"
-		},
-		{
-			"changes": [
-				{
-					"kind": "changed",
-					"summary": "Require host-selected source fields or speaker spans for restricted evidence and exclude unverified match reasoning by default; bind evidence eligibility into construction validation. Existing documents that used now-ineligible records require reconstruction.",
-					"symbols": [
-						"AssetEvidenceSource",
-						"AssetSource",
-						"buildAssetEvidence",
-						"renderAssetEvidencePlan",
-						"validateAssetEvidenceDocument"
-					]
-				}
-			],
-			"date": "2026-10-26",
-			"version": "0.4.0"
-		},
-		{
-			"changes": [
-				{
-					"kind": "added",
-					"summary": "Preserve explicitly requested fictional examples as distinct visibly labeled blocks; require host authorization and bind that permission into the construction record.",
-					"symbols": [
-						"AssetEditInput",
-						"AssetEvidencePlan",
-						"AssetEvidenceDocument",
-						"AssetEvidencePlanSchema",
-						"renderAssetEvidencePlan",
-						"validateAssetEvidenceDocument",
-						"editPartnershipAsset"
-					]
-				}
-			],
-			"date": "2026-10-25",
-			"version": "0.3.4"
-		},
-		{
-			"changes": [
-				{
-					"kind": "fixed",
-					"summary": "Preserve explicitly empty source snapshots during drafting and editing rather than substituting synthetic source records.",
-					"symbols": [
-						"draftPartnershipAsset",
-						"editPartnershipAsset"
-					]
-				}
-			],
-			"date": "2026-10-25",
-			"version": "0.3.3"
-		},
-		{
-			"changes": [
-				{
-					"kind": "fixed",
-					"summary": "Send compact source references to the model rather than repeated hashes and integrity metadata; bind selected references to immutable evidence server-side.",
-					"symbols": [
-						"draftPartnershipAsset",
-						"editPartnershipAsset"
-					]
-				}
-			],
-			"date": "2026-10-25",
-			"version": "0.3.2"
-		},
-		{
-			"changes": [
-				{
-					"kind": "fixed",
-					"summary": "Canonicalize object keys for source and construction integrity so PostgreSQL JSONB persistence preserves valid evidence without weakening tamper detection.",
-					"symbols": [
-						"renderAssetEvidencePlan",
-						"validateAssetEvidenceDocument"
-					]
-				}
-			],
-			"date": "2026-10-25",
-			"version": "0.3.1"
-		},
-		{
-			"changes": [
-				{
-					"kind": "added",
-					"summary": "Construct assets from immutable source references with provenance, content integrity validation, and deterministic evidence-bound scenario calculations. Render proposed actions and questions separately from quoted source information.",
-					"symbols": [
-						"buildAssetEvidence",
-						"renderAssetEvidencePlan",
-						"validateAssetEvidenceDocument",
-						"calculateAssetScenario",
-						"AssetEvidencePlanSchema",
-						"ASSET_EVIDENCE_HEADINGS",
-						"AssetEvidenceSource",
-						"AssetEvidenceRecord",
-						"AssetEvidencePlan",
-						"AssetEvidenceDocument"
-					]
-				},
-				{
-					"kind": "changed",
-					"summary": "Drafting and editing return a source-backed construction record; factual blocks are selected by evidence ID and rendered by code rather than freely authored by the model. Existing prose is editing context, not evidence. Hosts must independently review proposal and question blocks for factual presuppositions.",
-					"symbols": [
-						"draftPartnershipAsset",
-						"editPartnershipAsset",
-						"PartnershipAsset",
-						"AssetSource"
-					]
-				}
-			],
-			"date": "2026-10-25",
-			"version": "0.3.0"
-		},
-		{
-			"changes": [
-				{
-					"kind": "fixed",
-					"summary": "Prioritize source evidence over document templates and use Sonnet for factual asset drafting and editing; preserve uncertainty and omit unsupported sections.",
-					"symbols": [
-						"draftPartnershipAsset"
-					]
-				}
-			],
-			"date": "2026-10-25",
-			"version": "0.2.4"
-		},
-		{
-			"changes": [
-				{
-					"kind": "added",
-					"summary": "Carry original evidence sources through asset drafting and editing; keep missing facts explicit instead of inventing commercial terms or replacing source details with profile summaries.",
-					"symbols": [
-						"AssetSource",
-						"AssetInput",
-						"AssetEditInput",
-						"draftPartnershipAsset",
-						"editPartnershipAsset"
-					]
-				}
-			],
-			"date": "2026-10-25",
-			"version": "0.2.3"
-		},
-		{
-			"changes": [
-				{
-					"kind": "fixed",
-					"summary": "Size asset generation and revision output budgets from requested document bounds and pass those bounds into the drafting prompt.",
-					"symbols": [
-						"editPartnershipAsset"
-					]
-				}
-			],
-			"date": "2026-10-25",
-			"version": "0.2.2"
-		},
-		{
-			"changes": [
-				{
-					"kind": "fixed",
-					"summary": "Research missing client subscription pricing without overriding explicit annual customer values",
-					"symbols": [
-						"RevenuePipelineResearchInput",
-						"researchPartnerRevenuePipeline"
-					]
-				}
-			],
-			"date": "2026-10-23",
-			"version": "0.2.1"
-		},
-		{
-			"changes": [
-				{
-					"kind": "added",
-					"summary": "Add source-bound partner revenue pipeline scenarios with explicit assumptions and missing-data handling"
-				}
-			],
-			"date": "2026-10-23",
-			"version": "0.2.0"
-		},
-		{
-			"changes": [
-				{
-					"kind": "breaking",
-					"migration": {
-						"instruction": "Use researchStatus, analysisStatus, evidence and fieldEvidence to determine support. Legacy string research is unverified; an unavailable research run no longer gets a fresh researchedAt. Structured evidence triggers a separately metered field review through generateObject. Do not infer verification from generation time or a numeric score.",
-						"manual": true
-					},
-					"summary": "Preserve research availability and sources, independently review field evidence, and keep unavailable research unverified",
-					"symbols": [
-						"ResearchFn",
-						"ResearchContext",
-						"VerificationDossier",
-						"CompetitorAnalysis",
-						"MeetingPrepBrief"
-					]
-				}
-			],
-			"date": "2026-09-24",
-			"version": "0.1.0"
-		}
-	]
+  "contract": 1,
+  "name": "@absolutejs/partnership",
+  "releases": [
+    {
+      "changes": [
+        {
+          "kind": "added",
+          "summary": "Support evidence-linked announcement paragraphs for readable third-person prose; retain original source records and require hosts to independently verify each authored assertion before publication.",
+          "symbols": [
+            "AssetEvidencePlanSchema",
+            "renderAssetEvidencePlan",
+            "presentAssetEvidenceDocument",
+            "draftPartnershipAsset",
+            "editPartnershipAsset",
+            "ASSET_CONTENT_POLICY",
+            "reviewAssetContent"
+          ]
+        }
+      ],
+      "date": "2026-10-26",
+      "version": "0.6.0"
+    },
+    {
+      "changes": [
+        {
+          "kind": "changed",
+          "summary": "Classify source use during generation and reject goals or baselines as results, stale corrections, and business background as operative legal terms before constructing the unchanged evidence document.",
+          "symbols": [
+            "draftPartnershipAsset",
+            "editPartnershipAsset",
+            "ASSET_FORMATS",
+            "ASSET_EVIDENCE_HEADINGS",
+            "AssetEvidencePlanSchema"
+          ]
+        }
+      ],
+      "date": "2026-10-26",
+      "version": "0.5.3"
+    },
+    {
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Separate factual input requests from system writing corrections, prohibit unsupplied legal proposal blocks, and block legacy legal defaults even if a model reviewer approves them.",
+          "symbols": [
+            "ASSET_CONTENT_POLICY",
+            "reviewAssetContent",
+            "draftPartnershipAsset",
+            "editPartnershipAsset"
+          ]
+        }
+      ],
+      "date": "2026-10-26",
+      "version": "0.5.2"
+    },
+    {
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Bound document review context to selected validated blocks instead of repeating the entire intake evidence ledger; retain provenance and section context.",
+          "symbols": [
+            "reviewAssetContent",
+            "ASSET_CONTENT_POLICY"
+          ]
+        }
+      ],
+      "date": "2026-10-26",
+      "version": "0.5.1"
+    },
+    {
+      "changes": [
+        {
+          "kind": "added",
+          "summary": "Review source-backed documents for section relevance, required inputs, announcement confirmation and supplied legal terms before readiness.",
+          "symbols": [
+            "reviewAssetContent",
+            "assetContentIssues",
+            "ASSET_CONTENT_POLICY",
+            "AssetContentReview"
+          ]
+        }
+      ],
+      "date": "2026-10-26",
+      "version": "0.5.0"
+    },
+    {
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Deduplicate identical selected evidence references and remove sections left empty before constructing the document, without changing source text or spending a model repair call.",
+          "symbols": [
+            "draftPartnershipAsset",
+            "editPartnershipAsset"
+          ]
+        }
+      ],
+      "date": "2026-10-26",
+      "version": "0.4.6"
+    },
+    {
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Keep legal draft status in the fixed renderer notice instead of inviting generated assertions about enforceability or obligations.",
+          "symbols": [
+            "ASSET_FORMATS",
+            "draftPartnershipAsset",
+            "AssetEvidencePlanSchema"
+          ]
+        }
+      ],
+      "date": "2026-10-26",
+      "version": "0.4.5"
+    },
+    {
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Constrain per-section block budgets in provider schemas so compact asset formats cannot request more blocks than their total composition limit; return exact word counts for repair.",
+          "symbols": [
+            "draftPartnershipAsset",
+            "editPartnershipAsset"
+          ]
+        }
+      ],
+      "date": "2026-10-26",
+      "version": "0.4.4"
+    },
+    {
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Keep source-backed email statements in the sender voice and label the draft once, while rendering founder and availability facts as neutral business fields in other documents.",
+          "symbols": [
+            "presentAssetEvidenceDocument"
+          ]
+        }
+      ],
+      "date": "2026-10-26",
+      "version": "0.4.3"
+    },
+    {
+      "changes": [
+        {
+          "kind": "added",
+          "summary": "Define per-format structured generation contracts for all 20 document types, with enforceable section, word and repetition limits.",
+          "symbols": [
+            "ASSET_FORMATS",
+            "AssetFormatType",
+            "AssetPresentationOptions",
+            "AssetEvidencePlanSchema",
+            "ASSET_EVIDENCE_HEADINGS"
+          ]
+        },
+        {
+          "kind": "changed",
+          "summary": "Present source-backed facts once with neutral conversational framing, stable citation numbers, email-specific layout and explicit non-binding legal draft labels while preserving original evidence and qualifiers.",
+          "symbols": [
+            "presentAssetEvidenceDocument",
+            "draftPartnershipAsset",
+            "editPartnershipAsset"
+          ]
+        }
+      ],
+      "date": "2026-10-26",
+      "version": "0.4.2"
+    },
+    {
+      "changes": [
+        {
+          "kind": "added",
+          "summary": "Render validated assets for readers with numbered source notes and clean excerpts while retaining unchanged source-proof metadata and keeping operator inputs out of exported content.",
+          "symbols": [
+            "presentAssetEvidenceDocument",
+            "AssetPresentationSource"
+          ]
+        }
+      ],
+      "date": "2026-10-26",
+      "version": "0.4.1"
+    },
+    {
+      "changes": [
+        {
+          "kind": "changed",
+          "summary": "Require host-selected source fields or speaker spans for restricted evidence and exclude unverified match reasoning by default; bind evidence eligibility into construction validation. Existing documents that used now-ineligible records require reconstruction.",
+          "symbols": [
+            "AssetEvidenceSource",
+            "AssetSource",
+            "buildAssetEvidence",
+            "renderAssetEvidencePlan",
+            "validateAssetEvidenceDocument"
+          ]
+        }
+      ],
+      "date": "2026-10-26",
+      "version": "0.4.0"
+    },
+    {
+      "changes": [
+        {
+          "kind": "added",
+          "summary": "Preserve explicitly requested fictional examples as distinct visibly labeled blocks; require host authorization and bind that permission into the construction record.",
+          "symbols": [
+            "AssetEditInput",
+            "AssetEvidencePlan",
+            "AssetEvidenceDocument",
+            "AssetEvidencePlanSchema",
+            "renderAssetEvidencePlan",
+            "validateAssetEvidenceDocument",
+            "editPartnershipAsset"
+          ]
+        }
+      ],
+      "date": "2026-10-25",
+      "version": "0.3.4"
+    },
+    {
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Preserve explicitly empty source snapshots during drafting and editing rather than substituting synthetic source records.",
+          "symbols": [
+            "draftPartnershipAsset",
+            "editPartnershipAsset"
+          ]
+        }
+      ],
+      "date": "2026-10-25",
+      "version": "0.3.3"
+    },
+    {
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Send compact source references to the model rather than repeated hashes and integrity metadata; bind selected references to immutable evidence server-side.",
+          "symbols": [
+            "draftPartnershipAsset",
+            "editPartnershipAsset"
+          ]
+        }
+      ],
+      "date": "2026-10-25",
+      "version": "0.3.2"
+    },
+    {
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Canonicalize object keys for source and construction integrity so PostgreSQL JSONB persistence preserves valid evidence without weakening tamper detection.",
+          "symbols": [
+            "renderAssetEvidencePlan",
+            "validateAssetEvidenceDocument"
+          ]
+        }
+      ],
+      "date": "2026-10-25",
+      "version": "0.3.1"
+    },
+    {
+      "changes": [
+        {
+          "kind": "added",
+          "summary": "Construct assets from immutable source references with provenance, content integrity validation, and deterministic evidence-bound scenario calculations. Render proposed actions and questions separately from quoted source information.",
+          "symbols": [
+            "buildAssetEvidence",
+            "renderAssetEvidencePlan",
+            "validateAssetEvidenceDocument",
+            "calculateAssetScenario",
+            "AssetEvidencePlanSchema",
+            "ASSET_EVIDENCE_HEADINGS",
+            "AssetEvidenceSource",
+            "AssetEvidenceRecord",
+            "AssetEvidencePlan",
+            "AssetEvidenceDocument"
+          ]
+        },
+        {
+          "kind": "changed",
+          "summary": "Drafting and editing return a source-backed construction record; factual blocks are selected by evidence ID and rendered by code rather than freely authored by the model. Existing prose is editing context, not evidence. Hosts must independently review proposal and question blocks for factual presuppositions.",
+          "symbols": [
+            "draftPartnershipAsset",
+            "editPartnershipAsset",
+            "PartnershipAsset",
+            "AssetSource"
+          ]
+        }
+      ],
+      "date": "2026-10-25",
+      "version": "0.3.0"
+    },
+    {
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Prioritize source evidence over document templates and use Sonnet for factual asset drafting and editing; preserve uncertainty and omit unsupported sections.",
+          "symbols": [
+            "draftPartnershipAsset"
+          ]
+        }
+      ],
+      "date": "2026-10-25",
+      "version": "0.2.4"
+    },
+    {
+      "changes": [
+        {
+          "kind": "added",
+          "summary": "Carry original evidence sources through asset drafting and editing; keep missing facts explicit instead of inventing commercial terms or replacing source details with profile summaries.",
+          "symbols": [
+            "AssetSource",
+            "AssetInput",
+            "AssetEditInput",
+            "draftPartnershipAsset",
+            "editPartnershipAsset"
+          ]
+        }
+      ],
+      "date": "2026-10-25",
+      "version": "0.2.3"
+    },
+    {
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Size asset generation and revision output budgets from requested document bounds and pass those bounds into the drafting prompt.",
+          "symbols": [
+            "editPartnershipAsset"
+          ]
+        }
+      ],
+      "date": "2026-10-25",
+      "version": "0.2.2"
+    },
+    {
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Research missing client subscription pricing without overriding explicit annual customer values",
+          "symbols": [
+            "RevenuePipelineResearchInput",
+            "researchPartnerRevenuePipeline"
+          ]
+        }
+      ],
+      "date": "2026-10-23",
+      "version": "0.2.1"
+    },
+    {
+      "changes": [
+        {
+          "kind": "added",
+          "summary": "Add source-bound partner revenue pipeline scenarios with explicit assumptions and missing-data handling"
+        }
+      ],
+      "date": "2026-10-23",
+      "version": "0.2.0"
+    },
+    {
+      "changes": [
+        {
+          "kind": "breaking",
+          "migration": {
+            "instruction": "Use researchStatus, analysisStatus, evidence and fieldEvidence to determine support. Legacy string research is unverified; an unavailable research run no longer gets a fresh researchedAt. Structured evidence triggers a separately metered field review through generateObject. Do not infer verification from generation time or a numeric score.",
+            "manual": true
+          },
+          "summary": "Preserve research availability and sources, independently review field evidence, and keep unavailable research unverified",
+          "symbols": [
+            "ResearchFn",
+            "ResearchContext",
+            "VerificationDossier",
+            "CompetitorAnalysis",
+            "MeetingPrepBrief"
+          ]
+        }
+      ],
+      "date": "2026-09-24",
+      "version": "0.1.0"
+    }
+  ]
 }
