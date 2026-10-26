@@ -11,7 +11,11 @@ for(const assetType of PARTNERSHIP_ASSET_TYPES){
    expect(payload.format).toEqual(format);
    expect(JSON.stringify(req.schema)).toContain(format.headings[0]);
    const block={kind:'source',evidenceId:'e1'};
-   expect(()=>req.validate({sections:[{heading:format.headings[0],blocks:[block,block]}],missingInputs:[]})).toThrow('only once');
+   expect(()=>req.validate({sections:[{heading:format.headings[0],blocks:[block]},{heading:format.headings[0],blocks:[block]}],missingInputs:[]})).toThrow('only once');
+   const perSection=Math.max(1,Math.floor(format.maxBlocks/format.maxSections));
+   expect(payload.compositionBudget.maxBlocksPerSection).toBe(perSection);
+   expect(JSON.stringify(req.schema)).toContain('\"maxItems\":'+perSection);
+   expect(()=>req.validate({sections:[{heading:format.headings[0],blocks:Array.from({length:perSection+1},()=>({kind:'proposal',text:'Consider a discovery conversation.'}))}],missingInputs:[]})).toThrow();
    return {object:req.validate({sections:[{heading:format.headings[0],blocks:[block]}],missingInputs:[]})};
   }});
   const display=presentAssetEvidenceDocument(sources,result.markdown,result.evidenceDocument,{assetType});

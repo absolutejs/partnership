@@ -209,11 +209,18 @@ const constructAsset = async (input: AssetInput | AssetEditInput, ctx: Partnersh
     }) })) };
   };
   const format = ASSET_FORMATS[input.assetType];
-  const formatSchema = AssetEvidencePlanSchema.extend({ sections: z.array(AssetEvidencePlanSchema.shape.sections.element.extend({ heading: z.enum(format.headings) })).min(1).max(format.maxSections) });
+  // Express the composition budget in the provider schema, not only in a
+  // post-generation rejection. Per-section bounds guarantee the global cap.
+  const blocksPerSection = Math.max(1, Math.floor(format.maxBlocks / format.maxSections));
+  const formatSchema = AssetEvidencePlanSchema.extend({ sections: z.array(AssetEvidencePlanSchema.shape.sections.element.extend({
+    heading: z.enum(format.headings),
+    blocks: AssetEvidencePlanSchema.shape.sections.element.shape.blocks.max(blocksPerSection),
+  })).min(1).max(format.maxSections) });
   const { object } = await ctx.generateObject({
     feature: "currentMarkdown" in input ? "partnershipAssetEdit" : "partnershipAssets",
     maxTokens: assetOutputTokens(input.bounds),
     messages: [{ role: "user", content: JSON.stringify({
+      compositionBudget: { maxSections: format.maxSections, maxBlocksPerSection: blocksPerSection, maxWords: format.maxWords },
       assetType: input.assetType, structureGuidance: entry.guidance, format: ASSET_FORMATS[input.assetType],
       sources: promptSources, hypotheticalAllowed, current: "currentMarkdown" in input ? { markdown: input.currentMarkdown, instructions: input.instructions } : undefined,
     }) }],
@@ -226,7 +233,7 @@ Use proposal blocks only for genuinely proposed actions, without factual presupp
     toolDescription: "Select source records and compose explicitly labeled proposals and questions.",
     toolName: "partnership_asset",
     validate: raw => {
-      const plan = bindPlan(raw);
+      const plan = bindPlan(formatSchema.parse(raw));
       const format = ASSET_FORMATS[input.assetType];
       const selected = plan.sections.flatMap(section => section.blocks.filter(block => block.kind === "source").map(block => block.evidenceId));
       if (new Set(selected).size !== selected.length) throw new Error("Use each factual source record only once; remove repeated evidence.");
@@ -234,7 +241,7 @@ Use proposal blocks only for genuinely proposed actions, without factual presupp
       if (plan.sections.some(section => !(format.headings as readonly string[]).includes(section.heading))) throw new Error("Choose headings from this document format's allowed headings.");
       const rendered = renderAssetEvidencePlan(sources, plan, hypotheticalAllowed);
       const words = plan.sections.flatMap(section => section.blocks.map(block => block.kind === "source" ? evidence.find(record => record.id === block.evidenceId)?.text ?? "" : block.text)).join(" ").split(/\s+/u).length;
-      if (words > format.maxWords) throw new Error("Document exceeds its format word limit; select fewer facts and shorten proposed actions without dropping necessary qualifications.");
+      if (words > format.maxWords) throw new Error(`Document has ${words} words; the ${input.assetType} word limit is ${format.maxWords}. Select fewer facts and shorten proposed actions without dropping necessary qualifications.`);
       if (rendered.markdown.length > input.bounds.markdownMax) throw new Error("Source-backed asset exceeds maximum document size");
       return plan;
     },
