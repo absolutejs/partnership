@@ -26,3 +26,7 @@ for(const assetType of PARTNERSHIP_ASSET_TYPES){
 test('short formats reject long content rather than silently truncating it',async()=>{
  await expect(draftPartnershipAsset({assetType:'outreach_email',bounds:{markdownMin:1,markdownMax:50000,titleMin:1,titleMax:100},sources:[{id:'long',label:'Intake',content:'Words '.repeat(250)+'.'}],match:{},profile:{}},{generateObject:async req=>({object:req.validate({sections:[{heading:'Opening',blocks:[{kind:'source',evidenceId:'e1'}]}],missingInputs:[]})})})).rejects.toThrow('word limit');
 });
+
+test('legal generation delegates draft status to the renderer',()=>{
+ for(const key of ['loi','mou','term_sheet'] as const)expect([...ASSET_FORMATS[key].headings]).not.toContain('Non-binding status');
+});

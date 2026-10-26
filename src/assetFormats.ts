@@ -17,8 +17,8 @@ export const ASSET_FORMATS = {
   first_win_sprint: { maxWords: 750, maxSections: 8, maxBlocks: 28, mode: "document", headings: ["Objectives", "Timeline", "Roles and responsibilities", "Deliverables", "Success measures", "Risks and open decisions", "Next steps"] },
   case_study_outline: { maxWords: 650, maxSections: 7, maxBlocks: 24, mode: "document", headings: ["Background", "Objectives", "Scope", "Results", "Lessons", "Next steps"] },
   press_release: { maxWords: 500, maxSections: 6, maxBlocks: 18, mode: "announcement", headings: ["Announcement", "Background", "Offer", "About", "Contact"] },
-  loi: { maxWords: 800, maxSections: 10, maxBlocks: 28, mode: "legal", headings: ["Parties", "Purpose", "Scope", "Commercial terms", "Confidentiality", "Exclusivity", "Non-binding status", "Signatures"] },
-  mou: { maxWords: 900, maxSections: 10, maxBlocks: 32, mode: "legal", headings: ["Parties", "Background", "Purpose", "Scope", "Roles and responsibilities", "Term", "Non-binding status", "Signatures"] },
-  term_sheet: { maxWords: 700, maxSections: 10, maxBlocks: 28, mode: "legal", headings: ["Parties", "Scope", "Commercial terms", "Term", "Exclusivity", "Roles and responsibilities", "Intellectual property", "Termination", "Non-binding status"] },
+  loi: { maxWords: 800, maxSections: 10, maxBlocks: 28, mode: "legal", headings: ["Parties", "Purpose", "Scope", "Commercial terms", "Confidentiality", "Exclusivity", "Signatures"] },
+  mou: { maxWords: 900, maxSections: 10, maxBlocks: 32, mode: "legal", headings: ["Parties", "Background", "Purpose", "Scope", "Roles and responsibilities", "Term", "Signatures"] },
+  term_sheet: { maxWords: 700, maxSections: 10, maxBlocks: 28, mode: "legal", headings: ["Parties", "Scope", "Commercial terms", "Term", "Exclusivity", "Roles and responsibilities", "Intellectual property", "Termination"] },
 } as const;
 export type AssetFormatType = keyof typeof ASSET_FORMATS;
