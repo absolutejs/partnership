@@ -59,3 +59,9 @@ test("draft request sends compact references rather than repeating integrity met
  }});
  expect(result.evidenceDocument.citations[0]?.id).toBe(records[0]?.id);
 });
+
+test("an explicitly empty source snapshot is not replaced with synthetic sources",async()=>{
+ const {editPartnershipAsset}=await import("../src/assets");
+ const result=await editPartnershipAsset({assetType:"deal_memo",bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources:[],currentMarkdown:"Old draft",currentTitle:"Memo",instructions:"Ask what is missing"},{generateObject:async request=>({object:request.validate({sections:[{heading:"Next steps",blocks:[{kind:"question",text:"What information can you provide?"}]}],missingInputs:[]})})});
+ expect(()=>validateAssetEvidenceDocument([],result.markdown,result.evidenceDocument)).not.toThrow();
+});
