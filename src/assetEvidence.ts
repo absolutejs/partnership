@@ -64,12 +64,14 @@ export const AssetEvidencePlanSchema = z.object({
       z.object({ kind: z.literal("source"), evidenceId: z.string().min(1) }).strict(),
       z.object({ kind: z.literal("proposal"), text: Text }).strict(),
       z.object({ kind: z.literal("question"), text: Text }).strict(),
+      z.object({ kind: z.literal("hypothetical"), text: Text }).strict(),
     ])).min(1).max(12),
   }).strict()).min(1).max(16),
   missingInputs: z.array(Text).max(20),
 }).strict();
 export type AssetEvidencePlan = z.infer<typeof AssetEvidencePlanSchema>;
 export type AssetEvidenceDocument = {
+  hypotheticalAllowed: boolean;
   version: 1;
   sourceDigest: string;
   plan: AssetEvidencePlan;
@@ -79,23 +81,27 @@ export type AssetEvidenceDocument = {
 const plain = (text: string) => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replace(/[\\`*_{}\[\]()#+.!|~-]/gu, "\\$&");
 /** The caller's source snapshot is authoritative. Rebuild the ledger on every
  * render; a model-supplied citation object is never accepted. */
-export const renderAssetEvidencePlan = (sources: readonly AssetEvidenceSource[], raw: unknown) => {
+export const renderAssetEvidencePlan = (sources: readonly AssetEvidenceSource[], raw: unknown, hypotheticalAllowed = false) => {
   const plan = AssetEvidencePlanSchema.parse(raw);
   const ledger = new Map(buildAssetEvidence(sources).map(record => [record.id, record]));
   const citations = new Map<string, AssetEvidenceRecord>();
   const markdown = plan.sections.map(section => `## ${section.heading}\n\n${section.blocks.map(block => {
+    if (block.kind === "hypothetical") {
+      if (!hypotheticalAllowed) throw new Error("A fictional example requires explicit host authorization");
+      return `**Hypothetical example (fictional, not an actual result):** ${plain(block.text)}`;
+    }
     if (block.kind !== "source") return `**${block.kind === "proposal" ? "Proposed" : "To confirm"}:** ${plain(block.text)}`;
     const record = ledger.get(block.evidenceId);
     if (!record) throw new Error("Unknown or stale asset evidence reference");
     citations.set(record.id, record);
     return `> ${plain(record.text).replaceAll("\n", "\n> ")}\n\nSource: ${plain(record.sourceLabel)} · ${record.provenance} · ${plain(record.pointer || "source text")} · reference ${record.id.slice(0, 12)}`;
   }).join("\n\n")}`).join("\n\n") + (plan.missingInputs.length ? `\n\n## Operator inputs needed\n${plan.missingInputs.map(text => `- ${plain(text)}`).join("\n")}` : "");
-  const evidenceDocument: AssetEvidenceDocument = { version: 1, sourceDigest: digest(canonical(sources)), plan, citations: [...citations.values()], markdownDigest: digest(markdown) };
+  const evidenceDocument: AssetEvidenceDocument = { hypotheticalAllowed, version: 1, sourceDigest: digest(canonical(sources)), plan, citations: [...citations.values()], markdownDigest: digest(markdown) };
   return { markdown, evidenceDocument };
 };
 /** Verify persisted content, including after recovery and before export. */
 export const validateAssetEvidenceDocument = (sources: readonly AssetEvidenceSource[], markdown: string, document: AssetEvidenceDocument) => {
-  const rebuilt = renderAssetEvidencePlan(sources, document.plan);
+  const rebuilt = renderAssetEvidencePlan(sources, document.plan, document.hypotheticalAllowed);
   if (document.version !== 1 || canonical(rebuilt.evidenceDocument) !== canonical(document) || rebuilt.markdown !== markdown)
     throw new Error("Asset document no longer matches its source-backed construction");
   return rebuilt;

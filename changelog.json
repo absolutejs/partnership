@@ -3,6 +3,25 @@
   "name": "@absolutejs/partnership",
   "releases": [
     {
+      "version": "0.3.4",
+      "date": "2026-10-25",
+      "changes": [
+        {
+          "kind": "added",
+          "summary": "Preserve explicitly requested fictional examples as distinct visibly labeled blocks; require host authorization and bind that permission into the construction record.",
+          "symbols": [
+            "AssetEditInput",
+            "AssetEvidencePlan",
+            "AssetEvidenceDocument",
+            "AssetEvidencePlanSchema",
+            "renderAssetEvidencePlan",
+            "validateAssetEvidenceDocument",
+            "editPartnershipAsset"
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.3.3",
       "date": "2026-10-25",
       "changes": [

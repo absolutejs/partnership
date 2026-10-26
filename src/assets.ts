@@ -193,6 +193,7 @@ const evidenceSources = (input: { sources?: readonly AssetSource[]; profile?: Re
 ];
 const constructAsset = async (input: AssetInput | AssetEditInput, ctx: PartnershipContext): Promise<PartnershipAsset> => {
   const sources = evidenceSources(input);
+  const hypotheticalAllowed = "hypotheticalAllowed" in input && input.hypotheticalAllowed === true;
   const evidence = buildAssetEvidence(sources);
   const entry = PARTNERSHIP_ASSET_CATALOG[input.assetType];
   const references = new Map(evidence.map((record, index) => [`e${index + 1}`, record.id]));
@@ -211,24 +212,24 @@ const constructAsset = async (input: AssetInput | AssetEditInput, ctx: Partnersh
     maxTokens: assetOutputTokens(input.bounds),
     messages: [{ role: "user", content: JSON.stringify({
       assetType: input.assetType, structureGuidance: entry.guidance,
-      sources: promptSources, current: "currentMarkdown" in input ? { markdown: input.currentMarkdown, instructions: input.instructions } : undefined,
+      sources: promptSources, hypotheticalAllowed, current: "currentMarkdown" in input ? { markdown: input.currentMarkdown, instructions: input.instructions } : undefined,
     }) }],
     model: ctx.model ?? DEFAULT_MODEL,
     schema: z.toJSONSchema(AssetEvidencePlanSchema),
     systemPrompt: `${SYSTEM}
 CONSTRUCTION CONTRACT OVERRIDES PROSE FORMATTING INSTRUCTIONS:
 Return sections containing source references, proposed actions, and neutral questions. You CANNOT author factual text, source quotations, citations, metrics, titles or factual headings. Select source reference IDs (e1, e2, etc.); the server inserts their exact text and provenance. A source reference is a reported quotation, never independent verification. Preserve context and uncertainty; do not cherry-pick an outdated goal or an assistant's speculation as a confirmed outcome. Select the strongest relevant primary records, avoiding duplicate summaries.
-Use proposal blocks only for genuinely proposed actions, without factual presuppositions, claims of existing capability, agreed terms or guaranteed results. Use question blocks for neutral requests for missing information. These blocks will be visibly labeled and still require semantic review. Never put a factual assertion in a proposal/question to bypass references. Unknown information goes in missingInputs; it must not be invented. Use the allowed neutral section headings. Do not pad documents to fill templates or repeat the same evidence. Existing document text is editing context, NOT evidence.`,
+Use proposal blocks only for genuinely proposed actions, without factual presuppositions, claims of existing capability, agreed terms or guaranteed results. Use question blocks for neutral requests for missing information. These blocks will be visibly labeled and still require semantic review. Never put a factual assertion in a proposal/question to bypass references. Unknown information goes in missingInputs; it must not be invented. Use the allowed neutral section headings. Do not pad documents to fill templates or repeat the same evidence. Existing document text is editing context, NOT evidence. A hypothetical block is permitted ONLY when hypotheticalAllowed=true: it is visibly fictional and must never be presented as real proof or an actual result. Otherwise do not create hypothetical blocks.`,
     toolDescription: "Select source records and compose explicitly labeled proposals and questions.",
     toolName: "partnership_asset",
     validate: raw => {
       const plan = bindPlan(raw);
-      const rendered = renderAssetEvidencePlan(sources, plan);
+      const rendered = renderAssetEvidencePlan(sources, plan, hypotheticalAllowed);
       if (rendered.markdown.length > input.bounds.markdownMax) throw new Error("Source-backed asset exceeds maximum document size");
       return plan;
     },
   });
-  const rendered = renderAssetEvidencePlan(sources, object);
+  const rendered = renderAssetEvidencePlan(sources, object, hypotheticalAllowed);
   return { ...rendered, title: input.assetTypeLabel ?? entry.label };
 };
 
@@ -236,6 +237,8 @@ Use proposal blocks only for genuinely proposed actions, without factual presupp
 export const draftPartnershipAsset = (input: AssetInput, ctx: PartnershipContext) => constructAsset(input, ctx);
 
 export type AssetEditInput = {
+  /** Explicit user request for visibly fictional examples; false by default. */
+  hypotheticalAllowed?: boolean;
   sources?: readonly AssetSource[];
   assetType: PartnershipAssetType;
   assetTypeLabel?: string;

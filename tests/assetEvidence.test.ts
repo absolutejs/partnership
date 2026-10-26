@@ -65,3 +65,12 @@ test("an explicitly empty source snapshot is not replaced with synthetic sources
  const result=await editPartnershipAsset({assetType:"deal_memo",bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources:[],currentMarkdown:"Old draft",currentTitle:"Memo",instructions:"Ask what is missing"},{generateObject:async request=>({object:request.validate({sections:[{heading:"Next steps",blocks:[{kind:"question",text:"What information can you provide?"}]}],missingInputs:[]})})});
  expect(()=>validateAssetEvidenceDocument([],result.markdown,result.evidenceDocument)).not.toThrow();
 });
+
+test("fiction is forbidden by default and unmistakably labeled only with host permission",()=>{
+ const fictional={sections:[{heading:"Overview",blocks:[{kind:"hypothetical",text:"Imagine a workshop with 50 attendees."}]}],missingInputs:[]};
+ expect(()=>renderAssetEvidencePlan(sources,fictional)).toThrow();
+ const result=renderAssetEvidencePlan(sources,fictional,true);
+ expect(result.markdown).toContain("fictional, not an actual result");
+ expect(()=>validateAssetEvidenceDocument(sources,result.markdown,result.evidenceDocument)).not.toThrow();
+ expect(()=>validateAssetEvidenceDocument(sources,result.markdown,{...result.evidenceDocument,hypotheticalAllowed:false})).toThrow();
+});
