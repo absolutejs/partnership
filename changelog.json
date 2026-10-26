@@ -5,6 +5,22 @@
 		{
 			"changes": [
 				{
+					"kind": "added",
+					"summary": "Review source-backed documents for section relevance, required inputs, announcement confirmation and supplied legal terms before readiness.",
+					"symbols": [
+						"reviewAssetContent",
+						"assetContentIssues",
+						"ASSET_CONTENT_POLICY",
+						"AssetContentReview"
+					]
+				}
+			],
+			"date": "2026-10-26",
+			"version": "0.5.0"
+		},
+		{
+			"changes": [
+				{
 					"kind": "fixed",
 					"summary": "Deduplicate identical selected evidence references and remove sections left empty before constructing the document, without changing source text or spending a model repair call.",
 					"symbols": [
