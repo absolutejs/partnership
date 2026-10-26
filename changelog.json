@@ -3,6 +3,20 @@
   "name": "@absolutejs/partnership",
   "releases": [
     {
+      "version": "0.4.1",
+      "date": "2026-10-26",
+      "changes": [
+        {
+          "kind": "added",
+          "summary": "Render validated assets for readers with numbered source notes and clean excerpts while retaining unchanged source-proof metadata and keeping operator inputs out of exported content.",
+          "symbols": [
+            "presentAssetEvidenceDocument",
+            "AssetPresentationSource"
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.4.0",
       "date": "2026-10-26",
       "changes": [

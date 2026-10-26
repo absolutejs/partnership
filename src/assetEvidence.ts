@@ -148,3 +148,38 @@ export const calculateAssetScenario = (input: {
   if (!Number.isFinite(estimatedCustomers) || !Number.isFinite(potentialRevenue)) throw new Error("Scenario result is not finite");
   return { kind: "scenario" as const, estimatedCustomers, potentialRevenue, currency: input.revenue.currency, period: "annual" as const, formula: "(partner annual revenue / partner annual price) * client annual price", inputs: { revenue: input.revenue, partnerPrice: input.partnerPrice, clientPrice: input.clientPrice }, assumptions: [...input.assumptions] };
 };
+
+/** Reader-facing references deliberately exclude storage paths, hashes and IDs.
+ * The immutable construction above remains the audit contract. */
+export type AssetPresentationSource = {
+  number: number;
+  label: string;
+  provenance: string;
+  excerpts: string[];
+};
+export const presentAssetEvidenceDocument = (sources: readonly AssetEvidenceSource[], markdown: string, document: AssetEvidenceDocument) => {
+  const validated = validateAssetEvidenceDocument(sources, markdown, document).evidenceDocument;
+  const records = new Map(validated.citations.map(record => [record.id, record]));
+  const references = new Map<string, AssetPresentationSource>();
+  const sections = validated.plan.sections.map(section => {
+    const blocks = section.blocks.map(block => {
+      if (block.kind !== "source") {
+        const label = block.kind === "proposal" ? "Proposed" : block.kind === "question" ? "To confirm" : "Hypothetical example (fictional, not an actual result)";
+        return `**${label}:** ${plain(block.text)}`;
+      }
+      const record = records.get(block.evidenceId);
+      if (!record) throw new Error("Missing validated source record");
+      let reference = references.get(record.sourceId);
+      if (!reference) {
+        reference = { number: references.size + 1, label: record.sourceLabel, provenance: record.provenance, excerpts: [] };
+        references.set(record.sourceId, reference);
+      }
+      if (!reference.excerpts.includes(record.text)) reference.excerpts.push(record.text);
+      return `${plain(record.text)} [${reference.number}]`;
+    });
+    return `## ${section.heading}\n\n${blocks.join("\n\n")}`;
+  });
+  const publicSources = [...references.values()];
+  if (publicSources.length) sections.push(`## Sources\n\n${publicSources.map(source => `${source.number}. ${plain(source.label)} — ${plain(source.provenance)}`).join("\n\n")}`);
+  return { markdown: sections.join("\n\n"), sources: publicSources, missingInputs: [...validated.plan.missingInputs] };
+};
