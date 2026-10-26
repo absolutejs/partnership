@@ -27,6 +27,8 @@ test('policy rejects operative defaults and unconfirmed announcements even when 
  expect(ASSET_CONTENT_POLICY).toContain('even when labeled Proposed');
  expect(ASSET_CONTENT_POLICY).toContain('not a collection of intake fields');
  expect(ASSET_CONTENT_POLICY).toContain('stale correction chatter');
+ expect(ASSET_CONTENT_POLICY).toContain('Never ask the member to rewrite');
+ expect(ASSET_CONTENT_POLICY).toContain('A member-provided confirmation is sufficient');
 });
 
 test('unselected intake history is not sent to the paid reviewer',async()=>{
@@ -37,4 +39,10 @@ test('unselected intake history is not sent to the paid reviewer',async()=>{
   expect(req.messages[0]!.content.length).toBeLessThan(5000);
   return {object:req.validate({blocks:[{index:0,issue:null}],documentIssues:[],requiredInputs:[]})};
  }});
+});
+
+test('legacy legal proposals remain blocked even if the reviewer approves them',async()=>{
+ const doc=renderAssetEvidencePlan([],{sections:[{heading:'Termination',blocks:[{kind:'proposal',text:'Either party may terminate on 14 days notice.'}]}],missingInputs:[]});
+ const result=await reviewAssetContent({assetType:'term_sheet',sources:[],document:doc.evidenceDocument,markdown:doc.markdown},{generateObject:async req=>({object:req.validate({blocks:[{index:0,issue:null}],documentIssues:[],requiredInputs:[]})})});
+ expect(assetContentIssues(result)[0]).toContain('was not supplied as a source');
 });

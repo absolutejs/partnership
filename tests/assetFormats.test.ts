@@ -32,3 +32,9 @@ test('short formats reject long content rather than silently truncating it',asyn
 test('legal generation delegates draft status to the renderer',()=>{
  for(const key of ['loi','mou','term_sheet'] as const)expect([...ASSET_FORMATS[key].headings]).not.toContain('Non-binding status');
 });
+
+test('legal construction cannot invent terms behind a proposed label',async()=>{
+ for(const assetType of ['loi','mou','term_sheet'] as const){
+ await expect(draftPartnershipAsset({assetType,bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources,profile:{},match:{}},{generateObject:async req=>({object:req.validate({sections:[{heading:ASSET_FORMATS[assetType].headings[0],blocks:[{kind:'proposal',text:'Either party may terminate on 14 days notice.'}]}],missingInputs:[]})})})).rejects.toThrow();
+ }
+});
