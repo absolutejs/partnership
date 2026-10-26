@@ -106,8 +106,7 @@ When `clientPricing` is missing, supply `clientName` and optionally `clientWebsi
 
 `draftPartnershipAsset` and `editPartnershipAsset` return `evidenceDocument`
 with the title and Markdown. Persist it with the immutable input sources.
-Factual blocks select whole source records by content-addressed ID. The server
-renders their exact text, source label, provenance, JSON pointer and reference.
+Source blocks select whole records by content-addressed ID. The server renders their exact text and provenance. Announcement statement blocks instead contain model-authored prose linked to those original records; citation integrity is not proof that the prose is true.
 `validateAssetEvidenceDocument(sources, markdown, evidenceDocument)` rejects
 changed sources, citations, plans or output. Call it before publication/export.
 Existing prose is editing context, never new evidence.
@@ -131,3 +130,11 @@ A stored AI analysis is not primary evidence. Match sources are context-only by 
 ### Reader-facing source-backed documents
 
 Use `presentAssetEvidenceDocument(sources, storedMarkdown, evidenceDocument)` for exported documents and their previews. It validates the stored construction first, then produces clean Markdown with numbered sources, reader-facing source labels/excerpts, and separate `missingInputs`. Storage paths, hashes and internal reference IDs remain in the immutable audit document instead of appearing in the asset. Keep the original Markdown/proof for validation; do not replace it with presentation Markdown. Preview the same rendered file that downloads use rather than building a second document UI.
+
+### Document readiness and authored announcements
+
+Run `reviewAssetContent({ assetType, sources, document, markdown }, ctx)` before marking a draft ready. Every selected block is reviewed in its section and format context. `assetContentIssues(review)` includes misplaced or stale content, missing required facts, and document-level failures. Persist the review bound to the source/document digests and asset type; reuse it only while those inputs and the review policy remain unchanged. Missing essential facts should request member input instead of triggering a paid rewrite that cannot supply them. Optional quotes, secondary contacts and marketing detail should not block readiness.
+
+For `statement` blocks, independently check **every assertion** against the referenced original source excerpts. onSpark performs a separate entailment pass and the whole-document review before publication. Reject changed uncertainty, targets presented as achieved outcomes, invented agreement, and any unsupported detail; valid source IDs alone must never pass that gate. The shared document review includes statement excerpts for the same entailment check. It sends selected evidence only, not unrelated intake history. This is semantic review, not a guarantee against all model errors or independently verified source truth.
+
+Legal generation permits only supplied source terms or questions, not invented proposal defaults. Generation also classifies the intended use of sources to reject objectives/baselines under Results, stale correction text, and business background used as operative legal terms. The temporary source-use classification is not added to the immutable evidence format.

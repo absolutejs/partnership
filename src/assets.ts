@@ -277,7 +277,8 @@ Use proposal blocks only for genuinely proposed actions, without factual presupp
   return { ...rendered, title: input.assetTypeLabel ?? entry.label };
 };
 
-/** Every factual block is rendered from server-owned source records. */
+/** Source records remain immutable. Authored announcement statements require
+ * independent entailment and content review before publication. */
 export const draftPartnershipAsset = (input: AssetInput, ctx: PartnershipContext) => constructAsset(input, ctx);
 
 export type AssetEditInput = {
