@@ -101,3 +101,25 @@ Supply `partnerAnnualRevenue`, `partnerPricing`, and `clientPricing` as `Revenue
 `researchPartnerRevenuePipeline(input, researchContext)` uses the host's injected, metered research and structured-generation calls. Wire Brave-backed research through the existing `ResearchContext.research` contract. Only structured, retained source quotes with matching numeric amounts can populate research inputs. Unknown revenue, incomparable business scope, missing prices and unsupported evidence remain unavailable. Research cannot guarantee a public revenue disclosure exists. No foreign-exchange conversion is implicit.
 
 When `clientPricing` is missing, supply `clientName` and optionally `clientWebsite` to research the client's public recurring pricing alongside partner revenue and pricing (three query intents). Explicit client pricing always wins and skips the extra query. Usage-based prices remain unknown unless there is an explicit source-supported annual customer value.
+
+### Source-backed asset construction (0.3)
+
+`draftPartnershipAsset` and `editPartnershipAsset` return `evidenceDocument`
+with the title and Markdown. Persist it with the immutable input sources.
+Factual blocks select whole source records by content-addressed ID. The server
+renders their exact text, source label, provenance, JSON pointer and reference.
+`validateAssetEvidenceDocument(sources, markdown, evidenceDocument)` rejects
+changed sources, citations, plans or output. Call it before publication/export.
+Existing prose is editing context, never new evidence.
+
+Source quotations are **reported information, not verified truth**. Intake
+summaries can themselves contain AI errors. Hosts must distinguish primary
+records from summaries and retain their source snapshots. Sources are escaped
+as inert text; their content cannot choose its own provenance classification.
+
+Proposal and question blocks remain model-authored, visibly labeled, and must
+pass a host-side review rejecting any factual assertion or presupposition.
+Construction alone cannot establish semantic truth or appropriate proposals.
+`calculateAssetScenario` computes a labeled scenario from complete numeric
+source fields, matching annual periods/currencies, and explicit assumptions;
+it rejects invented amounts and never represents potential revenue as guaranteed.

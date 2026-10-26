@@ -375,8 +375,7 @@ describe("redlineDeal", () => {
 describe("draftPartnershipAsset", () => {
   test("builds partnership_asset with the supplied label + facts", async () => {
     const { calls, generateObject } = stub({
-      markdown: "# Memo\n\nbody",
-      title: "Deal Memo: Acme",
+      sections: [{ heading: "Next steps", blocks: [{ kind: "question", text: "Who will own the next step?" }] }], missingInputs: [],
     });
     const result = await draftPartnershipAsset(
       {
@@ -403,20 +402,19 @@ describe("draftPartnershipAsset", () => {
     expect(calls[0]?.model).toBe("claude-sonnet-4-6");
     expect(calls[0]?.systemPrompt).toContain("Factual integrity takes precedence");
     const payload = JSON.parse(calls[0]?.messages[0]?.content ?? "{}");
-    expect(payload.assetTypeLabel).toBe("Deal Memo");
-    expect(payload.sources[0].content).toContain("healthcare platform");
+    expect(payload.assetType).toBe("deal_memo");
+    expect(payload.evidence[0].text).toContain("healthcare platform");
     expect(calls[0]?.systemPrompt).toContain("primary evidence");
     expect(calls[0]?.systemPrompt).toContain("Do not infer hours per pricing tier");
     expect(calls[0]?.maxTokens).toBeGreaterThan(4500);
-    expect(payload.lengthBounds.markdownMax).toBe(9000);
-    expect(payload.party.primaryPartyName).toBe("Jane Doe");
-    expect(result.title).toBe("Deal Memo: Acme");
+    expect(result.evidenceDocument.version).toBe(1);
+    expect(result.title).toBe("Deal Memo");
   });
 });
 
 
 test("asset output budget follows requested document size without stretching short assets", async () => {
-  const { calls, generateObject } = stub({title:"Memo",markdown:"Short memo"});
+  const { calls, generateObject } = stub({sections:[{heading:"Next steps",blocks:[{kind:"question",text:"Who owns the next step?"}]}],missingInputs:[]});
   for (const markdownMax of [1200,8000,16000]) {
     await draftPartnershipAsset({ assetType:"deal_memo", bounds:{markdownMin:1,markdownMax,titleMin:1,titleMax:120}, match:{},profile:{} },{generateObject});
   }

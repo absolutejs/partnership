@@ -131,3 +131,5 @@ export {
 } from "./revenuePipeline";
 export { PartnerRevenuePipelineSchema } from "./revenuePipeline";
 export { revenueAmountSchema, partnerRevenuePipelineSchema } from "./revenuePipeline";
+
+export { buildAssetEvidence, renderAssetEvidencePlan, validateAssetEvidenceDocument, calculateAssetScenario, AssetEvidencePlanSchema, ASSET_EVIDENCE_HEADINGS, type AssetEvidenceSource, type AssetEvidenceRecord, type AssetEvidencePlan, type AssetEvidenceDocument } from "./assetEvidence";
