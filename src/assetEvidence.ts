@@ -73,7 +73,7 @@ export const buildAssetEvidence = (sources: readonly AssetEvidenceSource[]) => {
   });
 };
 
-export const ASSET_EVIDENCE_HEADINGS = ["Overview", "Opportunity", "Audience", "Offer", "Roles and responsibilities", "Positioning", "Talking points", "Discovery questions", "Proof and track record", "Commercial terms", "Distribution", "Timeline", "Success measures", "Risks and open decisions", "Next steps", "Contact", "Recommendation", "Decision", "Benefits", "Objection handling", "Objectives", "Progress", "Results", "Opening", "Resources", "Support", "Scope", "Investment", "Expected return", "Deliverables", "Background", "Lessons", "Announcement", "About", "Parties", "Purpose", "Confidentiality", "Exclusivity", "Non-binding status", "Signatures", "Term", "Intellectual property", "Termination"] as const;
+export const ASSET_EVIDENCE_HEADINGS = ["Overview", "Opportunity", "Audience", "Offer", "Roles and responsibilities", "Positioning", "Talking points", "Discovery questions", "Proof and track record", "Commercial terms", "Distribution", "Timeline", "Success measures", "Risks and open decisions", "Next steps", "Contact", "Recommendation", "Baseline", "Decision", "Benefits", "Objection handling", "Objectives", "Progress", "Results", "Opening", "Resources", "Support", "Scope", "Investment", "Expected return", "Deliverables", "Background", "Lessons", "Announcement", "About", "Parties", "Purpose", "Confidentiality", "Exclusivity", "Non-binding status", "Signatures", "Term", "Intellectual property", "Termination"] as const;
 const Text = z.string().trim().min(1).max(1200).refine(value => !/[\r\n<>]/u.test(value), "Use plain single-line text");
 export const AssetEvidencePlanSchema = z.object({
   sections: z.array(z.object({

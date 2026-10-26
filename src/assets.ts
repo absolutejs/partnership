@@ -201,7 +201,15 @@ const constructAsset = async (input: AssetInput | AssetEditInput, ctx: Partnersh
   const references = new Map(evidence.map((record, index) => [`e${index + 1}`, record.id]));
   const promptSources = sources.map(source => ({ id: source.id, label: source.label, kind: source.kind, records: evidence.flatMap((record,index) => record.sourceId === source.id ? [{ reference: `e${index + 1}`, location: record.pointer, text: record.text }] : []) }));
   const bindPlan = (raw: unknown) => {
-    const plan = AssetEvidencePlanSchema.parse(raw);
+    const supplied = formatSchema.parse(raw);
+    for (const section of supplied.sections) for (const block of section.blocks) {
+      if (block.kind !== "source") continue;
+      if (block.use === "superseded") throw new Error("Omit superseded facts and correction chatter.");
+      if (section.heading === "Results" && block.use !== "past_result") throw new Error("Results requires achieved outcomes. Put goals in Objectives and current business figures in Baseline.");
+      if (section.heading === "Progress" && !["past_result", "current_activity"].includes(block.use)) throw new Error("Progress requires actual activity or achieved outcomes, not a target or general background.");
+      if (format.mode === "legal" && ["Term", "Commercial terms", "Intellectual property", "Termination", "Exclusivity"].includes(section.heading) && !["supplied_term", "boundary"].includes(block.use)) throw new Error("Operative legal sections require a supplied term or boundary, never a business goal or background fact. Ask a neutral question when the term is unknown.");
+    }
+    const plan = AssetEvidencePlanSchema.parse({ ...supplied, sections: supplied.sections.map(section => ({ ...section, blocks: section.blocks.map(block => block.kind === "source" ? { kind: block.kind, evidenceId: block.evidenceId } : block) })) });
     const seen = new Set<string>();
     return { ...plan, sections: plan.sections.map(section => ({ ...section, blocks: section.blocks.flatMap<(typeof section.blocks)[number]>(block => {
       if (block.kind !== "source") return [block];
@@ -219,9 +227,10 @@ const constructAsset = async (input: AssetInput | AssetEditInput, ctx: Partnersh
   const sectionSchema = AssetEvidencePlanSchema.shape.sections.element;
   // Operative terms must be supplied evidence or unanswered questions. A
   // "proposed" label is not authorization to invent contract defaults.
+  const sourceBlock = sectionSchema.shape.blocks.element.options[0].extend({ use: z.enum(["identity", "background", "baseline", "past_result", "current_activity", "objective", "proposed_activity", "supplied_term", "boundary", "confirmation", "announcement", "superseded"]) });
   const blocks = format.mode === "legal"
-    ? z.array(z.discriminatedUnion("kind", [sectionSchema.shape.blocks.element.options[0], sectionSchema.shape.blocks.element.options[2]])).min(1)
-    : sectionSchema.shape.blocks;
+    ? z.array(z.discriminatedUnion("kind", [sourceBlock, sectionSchema.shape.blocks.element.options[2]])).min(1)
+    : z.array(z.discriminatedUnion("kind", [sourceBlock, sectionSchema.shape.blocks.element.options[1], sectionSchema.shape.blocks.element.options[2], sectionSchema.shape.blocks.element.options[3]])).min(1);
   const formatSchema = AssetEvidencePlanSchema.extend({ sections: z.array(AssetEvidencePlanSchema.shape.sections.element.extend({
     heading: z.enum(format.headings),
     blocks: blocks.max(blocksPerSection),
@@ -241,12 +250,12 @@ DOCUMENT FITNESS REQUIREMENTS:
 ${ASSET_CONTENT_POLICY}
 Use these requirements while composing. Missing required facts go in missingInputs; do not fabricate a finished announcement or review. Select only facts relevant to each heading. For legal formats, only source and question blocks are permitted. Use questions for any unsupplied term, even a reasonable default; never invent a proposal block.
 CONSTRUCTION CONTRACT OVERRIDES PROSE FORMATTING INSTRUCTIONS:
-Return sections containing source references, proposed actions, and neutral questions. You CANNOT author factual text, source quotations, citations, metrics, titles or factual headings. Select source reference IDs (e1, e2, etc.); the server inserts their exact text and provenance. A source reference is a reported quotation, never independent verification. Preserve context and uncertainty; do not cherry-pick an outdated goal or an assistant's speculation as a confirmed outcome. Select the strongest relevant primary records. Each source reference may appear only once in the whole document. Never include conversational setup such as a dream-partner declaration, intake instructions, or obsolete-goal correction chatter when the current fact is already supplied. Prefer concise business facts. Follow FORMAT headings and limits; do not force every document into a pitch or diligence checklist. An email must read as a short message with one ask. A guide must contain actionable selling and support guidance. Do not use discovery questions as a substitute for the requested deliverable; put unanswered preparation questions in missingInputs. Legal documents receive a fixed non-binding draft label from the renderer. Do not generate a non-binding-status section, legal-effect disclaimer, enforceability assertion, or claims that this document creates no obligations. Focus on proposed terms and move unresolved approvals into missingInputs.
+Return sections containing source references, proposed actions, and neutral questions. You CANNOT author factual text, source quotations, citations, metrics, titles or factual headings. For every source block, classify its use truthfully before placing it: objective for targets/intentions, baseline for current business size, past_result for achieved outcomes, current_activity for actual ongoing work, supplied_term for explicit contractual instructions, boundary for stated constraints, and superseded for obsolete corrections (omit these). These classifications do not verify the facts; the independent content review checks them in context. Select source reference IDs (e1, e2, etc.); the server inserts their exact text and provenance. A source reference is a reported quotation, never independent verification. Preserve context and uncertainty; do not cherry-pick an outdated goal or an assistant's speculation as a confirmed outcome. Select the strongest relevant primary records. Each source reference may appear only once in the whole document. Never include conversational setup such as a dream-partner declaration, intake instructions, or obsolete-goal correction chatter when the current fact is already supplied. Prefer concise business facts. Follow FORMAT headings and limits; do not force every document into a pitch or diligence checklist. An email must read as a short message with one ask. A guide must contain actionable selling and support guidance. Do not use discovery questions as a substitute for the requested deliverable; put unanswered preparation questions in missingInputs. Legal documents receive a fixed non-binding draft label from the renderer. Do not generate a non-binding-status section, legal-effect disclaimer, enforceability assertion, or claims that this document creates no obligations. Focus on proposed terms and move unresolved approvals into missingInputs.
 Use proposal blocks only for genuinely proposed actions, without factual presuppositions, claims of existing capability, agreed terms or guaranteed results. Use question blocks for neutral requests for missing information. These blocks will be visibly labeled and still require semantic review. Never put a factual assertion in a proposal/question to bypass references. Unknown information goes in missingInputs; it must not be invented. Use the allowed neutral section headings. Do not pad documents to fill templates or repeat the same evidence. Existing document text is editing context, NOT evidence. A hypothetical block is permitted ONLY when hypotheticalAllowed=true: it is visibly fictional and must never be presented as real proof or an actual result. Otherwise do not create hypothetical blocks.`,
     toolDescription: "Select source records and compose explicitly labeled proposals and questions.",
     toolName: "partnership_asset",
     validate: raw => {
-      const plan = bindPlan(formatSchema.parse(raw));
+      const plan = bindPlan(raw);
       const format = ASSET_FORMATS[input.assetType];
       if (plan.sections.length > format.maxSections || plan.sections.flatMap(section => section.blocks).length > format.maxBlocks) throw new Error("Document exceeds the format's section or block limit; compose a concise complete version.");
       if (plan.sections.some(section => !(format.headings as readonly string[]).includes(section.heading))) throw new Error("Choose headings from this document format's allowed headings.");

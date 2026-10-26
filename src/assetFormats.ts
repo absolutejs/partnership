@@ -4,7 +4,7 @@ export const ASSET_FORMATS = {
   sell_sheet: { maxWords: 300, maxSections: 5, maxBlocks: 12, mode: "sheet", headings: ["Offer", "Audience", "Benefits", "Objection handling", "Next steps"] },
   executive_summary: { maxWords: 300, maxSections: 5, maxBlocks: 12, mode: "sheet", headings: ["Recommendation", "Opportunity", "Success measures", "Risks and open decisions", "Decision"] },
   pitch_deck: { maxWords: 850, maxSections: 12, maxBlocks: 36, mode: "deck", headings: ["Overview", "Opportunity", "Audience", "Offer", "Proof and track record", "Roles and responsibilities", "Commercial terms", "Timeline", "Next steps", "Contact"] },
-  qbr: { maxWords: 650, maxSections: 8, maxBlocks: 28, mode: "deck", headings: ["Objectives", "Progress", "Results", "Risks and open decisions", "Next steps", "Decision"] },
+  qbr: { maxWords: 650, maxSections: 8, maxBlocks: 28, mode: "deck", headings: ["Objectives", "Baseline", "Progress", "Results", "Risks and open decisions", "Next steps", "Decision"] },
   outreach_email: { maxWords: 180, maxSections: 4, maxBlocks: 6, mode: "email", headings: ["Opening", "Offer", "Next steps", "Contact"] },
   follow_up_email: { maxWords: 150, maxSections: 4, maxBlocks: 6, mode: "email", headings: ["Opening", "Progress", "Next steps", "Contact"] },
   partnership_faq: { maxWords: 800, maxSections: 8, maxBlocks: 24, mode: "document", headings: ["Offer", "Audience", "Roles and responsibilities", "Commercial terms", "Resources", "Support", "Next steps"] },
