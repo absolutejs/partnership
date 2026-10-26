@@ -25,7 +25,7 @@ test("source edits, metadata edits and document edits invalidate persisted proof
 });
 test("duplicate source IDs fail rather than silently overwriting evidence",()=>expect(()=>buildAssetEvidence([...sources,...sources])).toThrow());
 test("unverified research and hostile source formatting remain labeled inert text",()=>{
- const hostile=[{id:"research",label:"Research",kind:"match",content:"<script>alert(1)</script> [fake](https://example.com)"}];
+ const hostile=[{id:"research",label:"Research",kind:"match",evidenceSelection:[{pointer:""}],content:"<script>alert(1)</script> [fake](https://example.com)"}];
  const evidence=buildAssetEvidence(hostile);
  const result=renderAssetEvidencePlan(hostile,{sections:[{heading:"Overview",blocks:[{kind:"source",evidenceId:evidence[0]!.id}]}],missingInputs:[]});
  expect(result.markdown).toContain("Unverified research / match record");
@@ -73,4 +73,26 @@ test("fiction is forbidden by default and unmistakably labeled only with host pe
  expect(result.markdown).toContain("fictional, not an actual result");
  expect(()=>validateAssetEvidenceDocument(sources,result.markdown,result.evidenceDocument)).not.toThrow();
  expect(()=>validateAssetEvidenceDocument(sources,result.markdown,{...result.evidenceDocument,hypotheticalAllowed:false})).toThrow();
+});
+
+
+test("generated match reasoning is not eligible evidence by default",()=>{
+ const match=[{id:"m",label:"Match",kind:"match",content:JSON.stringify({name:"Partner",reasoning:"40 percent yields $20000."})}];
+ expect(buildAssetEvidence(match)).toEqual([]);
+ const selected=[{...match[0]!,evidenceSelection:[{pointer:"/name"}]}];
+ const records=buildAssetEvidence(selected);
+ expect(records.map(record=>record.text)).toEqual(["Partner"]);
+ const rendered=renderAssetEvidencePlan(selected,{sections:[{heading:"Overview",blocks:[{kind:"source",evidenceId:records[0]!.id}]}],missingInputs:[]});
+ expect(()=>validateAssetEvidenceDocument(match,rendered.markdown,rendered.evidenceDocument)).toThrow();
+});
+test("host-selected speaker spans retain original offsets and exclude assistant prose",()=>{
+ const transcript="Assistant: Invented 999 customers.\nUser: We sold 41 tickets.\nAssistant: Great.";
+ const start=transcript.indexOf("We sold"); const end=transcript.lastIndexOf("Assistant:");
+ const selected=[{id:"i",label:"Intake",content:JSON.stringify({transcript,summary:"AI says 999."}),evidenceSelection:[{pointer:"/transcript",start,end}]}];
+ const evidence=buildAssetEvidence(selected);
+ expect(evidence.map(record=>record.text)).toEqual(["We sold 41 tickets."]);
+ expect(transcript.slice(evidence[0]!.start,evidence[0]!.end)).toBe(evidence[0]!.text);
+ expect(()=>buildAssetEvidence([{...selected[0]!,evidenceSelection:[{pointer:"/transcript",start:-1}]}])).toThrow();
+ expect(()=>buildAssetEvidence([{...selected[0]!,evidenceSelection:[{pointer:"/absent"}]}])).toThrow();
+ expect(buildAssetEvidence([{...selected[0]!,evidenceSelection:[]}])).toEqual([]);
 });

@@ -123,3 +123,7 @@ Construction alone cannot establish semantic truth or appropriate proposals.
 `calculateAssetScenario` computes a labeled scenario from complete numeric
 source fields, matching annual periods/currencies, and explicit assumptions;
 it rejects invented amounts and never represents potential revenue as guaranteed.
+
+### Evidence eligibility
+
+A stored AI analysis is not primary evidence. Match sources are context-only by default. Hosts may set `evidenceSelection` to exact JSON-pointer fields and optional decoded-text `start`/`end` spans. Use it to select original user turns, supplied documents, or independently retained evidence; never grant eligibility to generated reasoning simply because it is stored. An empty selection produces no factual records. Selection metadata is included in the construction digest, and validation rejects old documents that used excluded records. Offsets still address the original immutable decoded source value. This establishes provenance, not the truth of a source or completeness of a model's selection.

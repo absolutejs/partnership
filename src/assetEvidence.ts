@@ -8,6 +8,9 @@ export type AssetEvidenceSource = {
   label: string;
   content: string;
   kind?: string;
+  /** Host-owned eligible JSON-pointer fields or text spans. Empty means context
+   * only. Unverified match records are context-only unless explicitly selected. */
+  evidenceSelection?: readonly { pointer: string; start?: number; end?: number }[];
 };
 export type AssetEvidenceRecord = {
   id: string;
@@ -45,13 +48,27 @@ export const buildAssetEvidence = (sources: readonly AssetEvidenceSource[]) => {
     try { values = leaves(JSON.parse(source.content)); }
     catch { values = [{ pointer: "", text: source.content }]; }
     const sourceDigest = digest(source.content);
-    return values.flatMap(value => [...segmenter.segment(value.text)].flatMap(segment => {
-      const text = segment.segment.trim();
-      if (!text) return [];
-      const start = segment.index + segment.segment.indexOf(text);
-      const end = start + text.length;
-      return [{ id: digest(JSON.stringify([source.id, sourceDigest, value.pointer, start, end])), sourceId: source.id, sourceDigest, sourceLabel: source.label, provenance: provenance(source.kind), pointer: value.pointer, start, end, text }];
-    }));
+    const selection = source.evidenceSelection ?? (source.kind === "match" ? [] : undefined);
+    if (selection?.some(span => !values.some(value => value.pointer === span.pointer)))
+      throw new Error("Asset evidence selection points to a missing source field");
+    const records = values.flatMap(value => {
+      if (!value.text.trim()) return [];
+      const spans = selection?.filter(span => span.pointer === value.pointer) ?? [{ pointer: value.pointer }];
+      return spans.flatMap(span => {
+        const from = span.start ?? 0;
+        const to = span.end ?? value.text.length;
+        if (!Number.isSafeInteger(from) || !Number.isSafeInteger(to) || from < 0 || to > value.text.length || from >= to)
+          throw new Error("Invalid asset evidence selection range");
+        return [...segmenter.segment(value.text.slice(from, to))].flatMap(segment => {
+          const text = segment.segment.trim();
+          if (!text) return [];
+          const start = from + segment.index + segment.segment.indexOf(text);
+          const end = start + text.length;
+          return [{ id: digest(JSON.stringify([source.id, sourceDigest, value.pointer, start, end])), sourceId: source.id, sourceDigest, sourceLabel: source.label, provenance: provenance(source.kind), pointer: value.pointer, start, end, text }];
+        });
+      });
+    });
+    return [...new Map(records.map(record => [record.id, record])).values()];
   });
 };
 

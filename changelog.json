@@ -3,6 +3,23 @@
   "name": "@absolutejs/partnership",
   "releases": [
     {
+      "version": "0.4.0",
+      "date": "2026-10-26",
+      "changes": [
+        {
+          "kind": "changed",
+          "summary": "Require host-selected source fields or speaker spans for restricted evidence and exclude unverified match reasoning by default; bind evidence eligibility into construction validation. Existing documents that used now-ineligible records require reconstruction.",
+          "symbols": [
+            "AssetEvidenceSource",
+            "AssetSource",
+            "buildAssetEvidence",
+            "renderAssetEvidencePlan",
+            "validateAssetEvidenceDocument"
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.3.4",
       "date": "2026-10-25",
       "changes": [

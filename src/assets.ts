@@ -1,4 +1,4 @@
-import { AssetEvidencePlanSchema, buildAssetEvidence, renderAssetEvidencePlan, type AssetEvidenceDocument } from "./assetEvidence";
+import { AssetEvidencePlanSchema, buildAssetEvidence, renderAssetEvidencePlan, type AssetEvidenceDocument, type AssetEvidenceSource } from "./assetEvidence";
 import { z } from "zod";
 import type { PartnershipContext } from "./ai";
 
@@ -168,7 +168,7 @@ export type PartnershipParty = {
   primaryPartyName: string;
 };
 
-export type AssetSource = { id: string; label: string; content: string; kind?: string };
+export type AssetSource = AssetEvidenceSource;
 export type AssetInput = {
   /** Full retained evidence, not just extracted profile summaries. */
   sources?: readonly AssetSource[];
