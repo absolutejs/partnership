@@ -3,6 +3,19 @@
   "name": "@absolutejs/partnership",
   "releases": [
     {
+      "version": "0.9.5",
+      "date": "2026-10-28",
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Bind financial extraction to reviewed findings, accepting exact shorter quotations within their verified source passages while rejecting invented values and mismatched sources.",
+          "symbols": [
+            "researchPartnerRevenuePipeline"
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.9.4",
       "date": "2026-10-28",
       "changes": [

@@ -58,3 +58,27 @@ test("provider revenue can support a labeled estimate when pricing is compatible
   expect(result.confidence).toBe("low");
   expect(result.inputs.partnerAnnualRevenue?.evidence.basis).toBe("provider_estimate");
 });
+
+
+describe("verified financial quotation binding", () => {
+  const extract = async (quote: string, sourceUrl = "https://partner.example/pricing", amount = 79) => {
+    const price: RevenueAmount = { ...money(amount), period: "month", unit: "customer", pricingModel: "recurring", evidence: { ...money(amount).evidence, quote, sourceUrl } };
+    return researchPartnerRevenuePipeline({ partnerName: "Partner" }, {
+      research: async () => ({ status: "grounded", text: "UNREVIEWED_RAW_SENTINEL", sources: [{ id: "pricing", url: "https://partner.example/pricing", title: "Partner pricing", excerpts: ["UNREVIEWED_RAW_SENTINEL"] }], findings: [{ claim: "A recurring plan is available", quote: "Standard plan. USD 79 per customer\nper month. Cancel anytime.", sourceId: "pricing" }], limitations: [], generatedAt: new Date().toISOString() }),
+      generateObject: async (request) => {
+        expect(JSON.stringify(request.messages)).not.toContain("UNREVIEWED_RAW_SENTINEL");
+        return { object: request.validate({ partnerAnnualRevenue: null, partnerPricing: price, assumptions: [] }) };
+      },
+    });
+  };
+  test("keeps exact shorter price quotations within a verified passage", async () => {
+    const result = await extract("USD 79 per customer per month.");
+    expect(result.inputs.partnerPricing?.amount).toBe(79);
+    expect(result.inputs.partnerPricing?.period).toBe("month");
+  });
+  test("rejects fabricated quoted text, incorrect numeric values and wrong source attribution", async () => {
+    expect((await extract("USD 89 per customer per month.", undefined, 89)).inputs.partnerPricing).toBeNull();
+    expect((await extract("USD 79 per customer per month.", undefined, 790)).inputs.partnerPricing).toBeNull();
+    expect((await extract("USD 79 per customer per month.", "https://other.example/pricing")).inputs.partnerPricing).toBeNull();
+  });
+});
