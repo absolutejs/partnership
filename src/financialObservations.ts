@@ -42,7 +42,7 @@ export const collectFinancialObservations = (research: StructuredResearch, conte
   if (!["grounded", "partial"].includes(research.status) || !Number.isFinite(Date.parse(research.generatedAt))) return [];
   const observations: FinancialObservation[] = [];
   for (const finding of research.findings) {
-    if (!hasMoney(finding.quote)) continue;
+    if (!hasMoney(finding.quote) && !/\b\d[\d,]*\+?\s+(?:active\s+)?(?:locations|studios|customers|clients|franchisees)\b/i.test(finding.quote)) continue;
     const source = research.sources.find(item => item.id === finding.sourceId);
     if (!source || !publicUrl.safeParse(source.url).success || !source.title) continue;
     const sourceHost = host(source.url);

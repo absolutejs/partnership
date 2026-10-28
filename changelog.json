@@ -6,6 +6,29 @@
 			"changes": [
 				{
 					"kind": "fixed",
+					"summary": "Preserve source coverage and bounded deeper revenue research; distinguish incomplete research from missing comparable inputs and retain sourced audience counts.",
+					"symbols": [
+						"researchPartnerRevenuePipeline",
+						"calculatePartnerRevenuePipeline",
+						"PartnerRevenuePipelineInputSchema",
+						"PartnerRevenuePipelineSchema",
+						"PartnerRevenuePipeline",
+						"partnerRevenuePipelineSchema",
+						"collectFinancialObservations",
+						"RevenueResearchCoverageSchema",
+						"RevenueResearchCoverage",
+						"revenueResearchCoverage",
+						"partnerRevenueResearchQueries"
+					]
+				}
+			],
+			"date": "2026-10-28",
+			"version": "0.9.9"
+		},
+		{
+			"changes": [
+				{
+					"kind": "fixed",
 					"summary": "Retain exact sourced financial observations independently of calculation eligibility, including ranges, program fees and one-time prices; preserve them when extraction fails.",
 					"symbols": [
 						"researchPartnerRevenuePipeline",

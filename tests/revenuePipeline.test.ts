@@ -29,8 +29,8 @@ describe("client pricing research", () => {
     });
     return {result,prompt:JSON.parse(prompt)};
   };
-  test("researches and calculates sourced client subscription price",async()=>{const {result,prompt}=await run();expect(prompt.queries).toHaveLength(3);expect(prompt.queries[2]).toContain("client.example");expect(result.status).toBe("available");expect(result.potentialPartnerRevenue).toBe(240000);expect(result.inputs.clientPricing?.evidence.sourceUrl).toBe("https://client.example/pricing");});
-  test("explicit client value wins and skips client search",async()=>{const explicit=money(480);explicit.evidence.basis="client_reported";const {result,prompt}=await run(explicit);expect(prompt.queries).toHaveLength(2);expect(result.inputs.clientPricing).toEqual(explicit);expect(result.potentialPartnerRevenue).toBe(480000);});
+  test("researches and calculates sourced client subscription price",async()=>{const {result,prompt}=await run();expect(prompt.queries).toHaveLength(5);expect(prompt.queries[4]).toContain("client.example");expect(result.status).toBe("available");expect(result.potentialPartnerRevenue).toBe(240000);expect(result.inputs.clientPricing?.evidence.sourceUrl).toBe("https://client.example/pricing");});
+  test("explicit client value wins and skips client search",async()=>{const explicit=money(480);explicit.evidence.basis="client_reported";const {result,prompt}=await run(explicit);expect(prompt.queries).toHaveLength(4);expect(result.inputs.clientPricing).toEqual(explicit);expect(result.potentialPartnerRevenue).toBe(480000);});
   test("client amount not supported by quote stays unavailable",async()=>{const {result}=await run(undefined,money(2400));expect(result.status).toBe("unavailable");expect(result.inputs.clientPricing).toBeNull();});
 });
 

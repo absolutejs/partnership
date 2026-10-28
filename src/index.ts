@@ -141,3 +141,5 @@ export { ASSET_CONTENT_POLICY, reviewAssetContent, assetContentIssues, type Asse
 export { CompanyRevenueObservationSchema, type CompanyRevenueObservation } from "./revenuePipeline";
 
 export { collectFinancialObservations, FinancialObservationSchema, uniqueFinancialObservations, type FinancialObservation } from "./financialObservations";
+
+export { RevenueResearchCoverageSchema, revenueResearchCoverage, partnerRevenueResearchQueries, type RevenueResearchCoverage } from "./revenueResearch";
