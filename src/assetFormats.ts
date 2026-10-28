@@ -1,7 +1,7 @@
 /** Per-format composition limits. These constrain the model, never trim output. */
 export const ASSET_FORMATS = {
   one_pager: { maxWords: 300, maxSections: 5, maxBlocks: 12, mode: "sheet", headings: ["Overview", "Offer", "Audience", "Proof and track record", "Next steps"] },
-  sell_sheet: { maxWords: 300, maxSections: 5, maxBlocks: 12, mode: "sheet", headings: ["Offer", "Audience", "Benefits", "Objection handling", "Next steps"] },
+  sell_sheet: { purpose: "A concise sales-enablement sheet for a partner representative: explain the offer, intended customer, supported benefits, positioning and honest objection handling. It is not a pitch to recruit the partner or an intake summary. Clearly labeled proposed arrangements remain proposed; do not imply they are agreed. Unknown commercial terms may be omitted and listed for confirmation rather than invented.", maxWords: 300, maxSections: 6, maxBlocks: 12, mode: "sheet", headings: ["Offer", "Audience", "Benefits", "Talking points", "Objection handling", "Positioning", "Next steps"] },
   executive_summary: { maxWords: 300, maxSections: 5, maxBlocks: 12, mode: "sheet", headings: ["Recommendation", "Opportunity", "Success measures", "Risks and open decisions", "Decision"] },
   pitch_deck: { maxWords: 850, maxSections: 12, maxBlocks: 36, mode: "deck", headings: ["Overview", "Opportunity", "Audience", "Offer", "Proof and track record", "Roles and responsibilities", "Commercial terms", "Timeline", "Next steps", "Contact"] },
   qbr: { maxWords: 650, maxSections: 8, maxBlocks: 28, mode: "deck", headings: ["Objectives", "Baseline", "Progress", "Results", "Risks and open decisions", "Next steps", "Decision"] },

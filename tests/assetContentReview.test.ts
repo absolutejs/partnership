@@ -58,3 +58,14 @@ test('announcement paragraphs preserve cited evidence and readable prose without
  expect(display.markdown).not.toContain('To confirm');
  expect(display.markdown).toContain('[1]');
 });
+
+test('sell-sheet review receives the same enablement purpose as composition',async()=>{
+ const doc=renderAssetEvidencePlan(sources,{sections:[{heading:'Offer',blocks:[{kind:'source',evidenceId:fact.id}]}],missingInputs:[]});
+ await reviewAssetContent({assetType:'sell_sheet',sources,document:doc.evidenceDocument,markdown:doc.markdown},{generateObject:async req=>{
+  const payload=JSON.parse(req.messages[0]!.content);
+  expect(payload.format.purpose).toContain('sales-enablement');
+  expect(payload.format.purpose).toContain('not a pitch to recruit');
+  expect(req.systemPrompt).toContain('Never request their removal merely to sound confident');
+  return {object:req.validate({blocks:[{index:0,issue:null}],documentIssues:[],requiredInputs:[]})};
+ }});
+});
