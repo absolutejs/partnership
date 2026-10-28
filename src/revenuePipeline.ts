@@ -128,7 +128,8 @@ export const researchPartnerRevenuePipeline = async (input: RevenuePipelineResea
     JSON.stringify({ ...input, queries: [`${input.partnerName} annual revenue`, `${input.partnerName} annual pricing`, ...(!input.clientPricing && input.clientName ? [`${input.clientName} annual pricing${input.clientWebsite ? ` ${input.clientWebsite}` : ""}`] : [])] }),
   );
   if (!research || typeof research === "string" || !["grounded", "partial"].includes(research.status)) return calculatePartnerRevenuePipeline(empty);
-  const schema = z.object({ partnerAnnualRevenue: RevenueAmountSchema.nullable(), partnerPricing: RevenueAmountSchema.nullable(), clientPricing: RevenueAmountSchema.nullable().optional(), assumptions: z.array(z.string()) });
+  const extractedAmount = RevenueAmountSchema.extend({ evidence: RevenueEvidenceSchema.omit({ observedAt: true, sourceTitle: true }) });
+  const schema = z.object({ partnerAnnualRevenue: extractedAmount.nullable(), partnerPricing: extractedAmount.nullable(), clientPricing: extractedAmount.nullable().optional(), assumptions: z.array(z.string()) });
   const { object } = await ctx.generateObject({
     feature: "partnerRevenuePipeline", model: ctx.model ?? "claude-sonnet-4-6", maxTokens: 2000,
     schema: z.toJSONSchema(schema), toolName: "partner_revenue_pipeline", toolDescription: "Extract source-supported revenue and pricing; null when unknown or incompatible.",
@@ -136,7 +137,7 @@ export const researchPartnerRevenuePipeline = async (input: RevenuePipelineResea
     messages: [{ role: "user", content: JSON.stringify({ input, research: { status: research.status, findings: research.findings, sources: research.sources.map(({ id, url, title }) => ({ id, url, title })), limitations: research.limitations } }) }], validate: (raw) => schema.parse(raw),
   });
   const unsupported: string[] = [];
-  const grounded = (value: RevenueAmount | null, label: string): RevenueAmount | null => {
+  const grounded = (value: z.infer<typeof extractedAmount> | null, label: string): RevenueAmount | null => {
     if (!value) return null;
     const normalizedQuote = value.evidence.quote.replace(/\s+/g, " ").trim();
     const finding = normalizedQuote && research.findings.find((f) => f.quote.replace(/\s+/g, " ").trim().includes(normalizedQuote) && research.sources.some((s) => s.id === f.sourceId && s.url === value.evidence.sourceUrl));
@@ -150,7 +151,9 @@ export const researchPartnerRevenuePipeline = async (input: RevenuePipelineResea
     const periodSupported = !pricing || (value.period === "year" ? annualPeriod : monthlyPeriod);
     const usageSupported = !pricing || !usagePrice || (value.pricingModel === "annual_customer_value" && annualPeriod && /\b(customer|account|company)\b/i.test(quote));
     if (!finding || !numericSupport || !periodSupported || !usageSupported || value.evidence.basis !== "documented") { unsupported.push(`${label} was not bound to a retained source quote.`); return null; }
-    return value;
+    const source = research.sources.find((item) => item.id === finding.sourceId && item.url === value.evidence.sourceUrl);
+    if (!source || !Number.isFinite(Date.parse(research.generatedAt))) { unsupported.push(`${label} has no valid recorded observation time.`); return null; }
+    return { ...value, evidence: { ...value.evidence, sourceTitle: source.title, observedAt: research.generatedAt } };
   };
   const result = calculatePartnerRevenuePipeline({ ...empty, partnerAnnualRevenue: grounded(object.partnerAnnualRevenue, "Revenue"), partnerPricing: grounded(object.partnerPricing, "Pricing"), clientPricing: input.clientPricing ?? (input.clientName ? grounded(object.clientPricing ?? null, "Client pricing") : null), assumptions: object.assumptions });
   result.limitations.push(...research.limitations, ...unsupported);

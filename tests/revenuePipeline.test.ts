@@ -82,3 +82,15 @@ describe("verified financial quotation binding", () => {
     expect((await extract("USD 79 per customer per month.", "https://other.example/pricing")).inputs.partnerPricing).toBeNull();
   });
 });
+
+
+test("financial source metadata comes from retained research, not model guesses", async () => {
+  const recordedAt = "2026-10-28T14:00:00.000Z";
+  const guessed = money(79);
+  const result = await researchPartnerRevenuePipeline({ partnerName: "Partner" }, {
+    research: async () => ({ status: "grounded", text: "", sources: [{ id: "s", url: guessed.evidence.sourceUrl!, title: "Recorded official title" }], findings: [{ claim: "Annual price", quote: "USD 79 per year", sourceId: "s" }], limitations: [], generatedAt: recordedAt }),
+    generateObject: async (request) => ({ object: request.validate({ partnerAnnualRevenue: null, partnerPricing: { ...guessed, pricingModel: "recurring", evidence: { ...guessed.evidence, quote: "USD 79 per year", observedAt: "2025-01-01T00:00:00.000Z", sourceTitle: "Invented title" } }, assumptions: [] }) }),
+  });
+  expect(result.inputs.partnerPricing?.evidence.observedAt).toBe(recordedAt);
+  expect(result.inputs.partnerPricing?.evidence.sourceTitle).toBe("Recorded official title");
+});

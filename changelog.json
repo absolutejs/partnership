@@ -3,6 +3,19 @@
   "name": "@absolutejs/partnership",
   "releases": [
     {
+      "version": "0.9.6",
+      "date": "2026-10-28",
+      "changes": [
+        {
+          "kind": "fixed",
+          "summary": "Use recorded research timestamps and source titles for financial evidence instead of model-generated provenance metadata.",
+          "symbols": [
+            "researchPartnerRevenuePipeline"
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.9.5",
       "date": "2026-10-28",
       "changes": [
