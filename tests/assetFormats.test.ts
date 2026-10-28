@@ -50,3 +50,15 @@ test('generation rejects semantic placement errors before rendering exact source
   return {object:accepted};
  }});
 });
+
+test('composition exposes expanded quotation costs and actionable repair feedback', async () => {
+ await draftPartnershipAsset({assetType:'sell_sheet',bounds:{markdownMin:1,markdownMax:50000,titleMin:1,titleMax:100},sources:[{id:'facts',label:'Intake',content:'We sell workshops. '+ 'Detail '.repeat(310)+'.'}],match:{},profile:{}},{generateObject:async req=>{
+  const payload=JSON.parse(req.messages[0]!.content);
+  const records=payload.sources[0].records;
+  expect(records[0].words).toBe(3);
+  expect(records[1].words).toBeGreaterThan(300);
+  expect(payload.compositionBudget.targetWords).toBeLessThan(300);
+  expect(()=>req.validate({sections:[{heading:'Offer',blocks:[{kind:'source',evidenceId:records[1].reference,use:'background'}]}],missingInputs:[]})).toThrow('Rendered block costs:');
+  return {object:req.validate({sections:[{heading:'Offer',blocks:[{kind:'source',evidenceId:records[0].reference,use:'background'}]}],missingInputs:[]})};
+ }});
+});

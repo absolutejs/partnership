@@ -6,6 +6,16 @@
 			"changes": [
 				{
 					"kind": "fixed",
+					"summary": "Expose rendered source word counts and per-block repair costs so asset composition budgets account for full quotations instead of reference IDs."
+				}
+			],
+			"date": "2026-10-28",
+			"version": "0.6.5"
+		},
+		{
+			"changes": [
+				{
+					"kind": "fixed",
 					"summary": "Clarify that content review headings are optional and clean blocks must return null instead of positive issue messages."
 				}
 			],
