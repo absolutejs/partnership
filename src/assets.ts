@@ -235,7 +235,7 @@ const constructAsset = async (input: AssetInput | AssetEditInput, ctx: Partnersh
   // post-generation rejection. Per-section bounds guarantee the global cap.
   const blocksPerSection = Math.max(1, Math.floor(format.maxBlocks / format.maxSections));
   const sectionSchema = AssetEvidencePlanSchema.shape.sections.element;
-  const maxAuthoredBlockWords = Math.max(1, Math.floor(format.maxWords / (format.maxSections * blocksPerSection)));
+  const maxAuthoredBlockWords = repairDocument ? format.maxWords : Math.max(1, Math.floor(format.maxWords / (format.maxSections * blocksPerSection)));
   const authoredText = z.string().min(1).regex(new RegExp(`^\\s*\\S+(?:\\s+\\S+){0,${maxAuthoredBlockWords - 1}}\\s*$`, "u"), `Use at most ${maxAuthoredBlockWords} words in each authored block; preserve necessary qualifications or omit the claim.`);
   const proposalBlock = sectionSchema.shape.blocks.element.options[1].extend({ text: authoredText });
   const questionBlock = sectionSchema.shape.blocks.element.options[2].extend({ text: authoredText });

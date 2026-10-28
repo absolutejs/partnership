@@ -6,6 +6,19 @@
 			"changes": [
 				{
 					"kind": "fixed",
+					"summary": "Enforce the whole-document word budget for bounded prose repairs instead of rejecting valid replacements against the initial per-block allocation.",
+					"symbols": [
+						"editPartnershipAsset"
+					]
+				}
+			],
+			"date": "2026-10-28",
+			"version": "0.9.2"
+		},
+		{
+			"changes": [
+				{
+					"kind": "fixed",
 					"summary": "Allow bounded source repairs to expand a section while enforcing the overall document block and word limits.",
 					"symbols": [
 						"editPartnershipAsset"

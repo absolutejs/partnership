@@ -141,3 +141,17 @@ test('source fallback can expand a section while retaining the global document b
  const full=await draftPartnershipAsset(input,{generateObject:async req=>({object:req.validate({sections:ASSET_FORMATS.sell_sheet.headings.slice(0,6).map(section),missingInputs:[]})})});
  await expect(edit(full)).rejects.toThrow('section or block limit');
 });
+
+
+test('bounded prose repair uses remaining document words instead of the initial per-block allocation',async()=>{
+ const input={assetType:'sell_sheet' as const,bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources,profile:{},match:{}};
+ const original=await draftPartnershipAsset(input,{generateObject:async req=>({object:req.validate({sections:[{heading:'Offer',blocks:[{kind:'statement',text:'We sell workshops.',evidenceIds:['e1']},{kind:'statement',text:'We sold 41 tickets.',evidenceIds:['e2']}]}],missingInputs:[]})})});
+ const text="On exclusivity: Lantern Harbor does not grant exclusivity. Lantern Harbor's intended direction is to build a repeatable cohost network with regional partners over the next twelve months.";
+ const result=await editPartnershipAsset({...input,currentMarkdown:original.markdown,currentTitle:original.title,currentEvidenceDocument:original.evidenceDocument,instructions:'Correct the wording.'},{generateObject:async req=>{
+ const patch=(value:string)=>({replacements:[{index:0,blocks:[{kind:'statement',text:value,evidenceIds:['e1']}]}],additionalSections:[],missingInputs:[]});
+ expect(()=>req.validate(patch(Array(300).fill('one').join(' ')))).toThrow('word limit is 300');
+ return {object:req.validate(patch(text))};
+ }});
+ expect(result.evidenceDocument.plan.sections[0]?.blocks[0]).toMatchObject({kind:'statement',text});
+ expect(result.evidenceDocument.plan.sections[0]?.blocks[1]).toEqual(original.evidenceDocument.plan.sections[0]?.blocks[1]);
+});
