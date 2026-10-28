@@ -33,3 +33,16 @@ describe("client pricing research", () => {
   test("explicit client value wins and skips client search",async()=>{const explicit=money(480);explicit.evidence.basis="client_reported";const {result,prompt}=await run(explicit);expect(prompt.queries).toHaveLength(2);expect(result.inputs.clientPricing).toEqual(explicit);expect(result.potentialPartnerRevenue).toBe(480000);});
   test("client amount not supported by quote stays unavailable",async()=>{const {result}=await run(undefined,money(2400));expect(result.status).toBe("unavailable");expect(result.inputs.clientPricing).toBeNull();});
 });
+
+
+test("provider revenue is retained when compatible pricing is unavailable", async () => {
+  const { PartnerRevenuePipelineSchema, calculatePartnerRevenuePipeline } = await import("../src/revenuePipeline");
+  const result = calculatePartnerRevenuePipeline({ partnerAnnualRevenue: null, partnerPricing: null, clientPricing: null });
+  result.companyRevenue = { provider: "apollo", providerRecordId: "org-1", domain: "example.com", amount: 1000000, display: "1M", currency: null, observedAt: new Date().toISOString(), basis: "provider_estimate" };
+  result.inputs.companyRevenue = result.companyRevenue;
+  const recalculated = calculatePartnerRevenuePipeline(result.inputs);
+  expect(recalculated.companyRevenue).toEqual(result.companyRevenue);
+  const parsed = PartnerRevenuePipelineSchema.parse(result);
+  expect(parsed.companyRevenue?.amount).toBe(1000000);
+  expect(parsed.potentialPartnerRevenue).toBeNull();
+});

@@ -137,3 +137,5 @@ export { presentAssetEvidenceDocument, type AssetPresentationSource, buildAssetE
 export { ASSET_FORMATS, type AssetFormatType } from "./assetFormats";
 export type { AssetPresentationOptions } from "./assetEvidence";
 export { ASSET_CONTENT_POLICY, reviewAssetContent, assetContentIssues, type AssetContentReview } from "./assetContentReview";
+
+export { CompanyRevenueObservationSchema, type CompanyRevenueObservation } from "./revenuePipeline";

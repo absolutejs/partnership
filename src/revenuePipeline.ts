@@ -18,7 +18,20 @@ export const RevenueAmountSchema = z.object({
   pricingModel: z.enum(["recurring", "annual_customer_value"]).optional(),
   evidence: RevenueEvidenceSchema,
 });
+/** Structured provider data retained even when pricing cannot support a calculation. */
+export const CompanyRevenueObservationSchema = z.object({
+  provider: z.string().min(1),
+  providerRecordId: z.string().nullable(),
+  domain: z.string().min(1),
+  amount: z.number().positive().nullable(),
+  display: z.string().nullable(),
+  currency: z.string().regex(/^[A-Z]{3}$/).nullable(),
+  observedAt: z.iso.datetime(),
+  basis: z.literal("provider_estimate"),
+});
+export type CompanyRevenueObservation = z.infer<typeof CompanyRevenueObservationSchema>;
 export const PartnerRevenuePipelineInputSchema = z.object({
+  companyRevenue: CompanyRevenueObservationSchema.optional(),
   partnerAnnualRevenue: RevenueAmountSchema.nullable(),
   partnerPricing: RevenueAmountSchema.nullable(),
   clientPricing: RevenueAmountSchema.nullable(),
@@ -28,6 +41,7 @@ export type RevenueEvidence = z.infer<typeof RevenueEvidenceSchema>;
 export type RevenueAmount = z.infer<typeof RevenueAmountSchema>;
 export type PartnerRevenuePipelineInput = z.infer<typeof PartnerRevenuePipelineInputSchema>;
 export type PartnerRevenuePipeline = {
+  companyRevenue?: CompanyRevenueObservation;
   status: "available" | "unavailable";
   customerEquivalents: number | null;
   potentialPartnerRevenue: number | null;
@@ -45,6 +59,7 @@ const annual = (value: RevenueAmount) => value.amount * (value.period === "month
 export const calculatePartnerRevenuePipeline = (input: PartnerRevenuePipelineInput): PartnerRevenuePipeline => {
   const limitations: string[] = [];
   const result: PartnerRevenuePipeline = {
+    companyRevenue: input.companyRevenue,
     status: "unavailable", customerEquivalents: null, potentialPartnerRevenue: null,
     currency: null, annualPartnerRevenue: null, annualPartnerPricing: null,
     annualClientPricing: null, confidence: null, inputs: input, limitations,
@@ -124,6 +139,7 @@ export const researchPartnerRevenuePipeline = async (input: RevenuePipelineResea
 };
 
 export const PartnerRevenuePipelineSchema = z.object({
+  companyRevenue: CompanyRevenueObservationSchema.optional(),
   status: z.enum(["available", "unavailable"]),
   customerEquivalents: z.number().positive().nullable(),
   potentialPartnerRevenue: z.number().positive().nullable(),
