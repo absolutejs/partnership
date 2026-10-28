@@ -3,6 +3,26 @@
   "name": "@absolutejs/partnership",
   "releases": [
     {
+      "version": "0.9.4",
+      "date": "2026-10-28",
+      "changes": [
+        {
+          "kind": "added",
+          "summary": "Use attributed provider revenue estimates for compatible revenue scenarios with low confidence and explicit estimate labels.",
+          "symbols": [
+            "RevenueEvidence",
+            "RevenueEvidenceSchema",
+            "RevenueAmountSchema",
+            "calculatePartnerRevenuePipeline",
+            "revenueAmountSchema",
+            "PartnerRevenuePipelineSchema",
+            "partnerRevenuePipelineSchema",
+            "PartnerRevenuePipelineInputSchema"
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.9.3",
       "date": "2026-10-28",
       "changes": [

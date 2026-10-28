@@ -46,3 +46,15 @@ test("provider revenue is retained when compatible pricing is unavailable", asyn
   expect(parsed.companyRevenue?.amount).toBe(1000000);
   expect(parsed.potentialPartnerRevenue).toBeNull();
 });
+
+
+test("provider revenue can support a labeled estimate when pricing is compatible", () => {
+  const pricing = { amount: 1000, currency: "USD", period: "year" as const, unit: "company" as const, evidence: { basis: "client_reported" as const, sourceTitle: "Explicit price", quote: "Annual company price USD 1000", observedAt: new Date().toISOString(), confidence: "medium" as const } };
+  const result = calculatePartnerRevenuePipeline({
+    partnerAnnualRevenue: null, partnerPricing: pricing, clientPricing: pricing,
+    companyRevenue: { provider: "apollo", providerRecordId: "org-1", domain: "example.com", amount: 1000000, display: "1M", currency: "USD", observedAt: new Date().toISOString(), basis: "provider_estimate" },
+  });
+  expect(result.potentialPartnerRevenue).toBe(1000000);
+  expect(result.confidence).toBe("low");
+  expect(result.inputs.partnerAnnualRevenue?.evidence.basis).toBe("provider_estimate");
+});

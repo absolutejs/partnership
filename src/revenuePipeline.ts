@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { ResearchContext } from "./ai";
 
 export const RevenueEvidenceSchema = z.object({
-  basis: z.enum(["documented", "client_reported"]),
+  basis: z.enum(["documented", "client_reported", "provider_estimate"]),
   sourceUrl: z.url().refine((raw) => { const u = new URL(raw); return ["https:", "http:"].includes(u.protocol) && !u.username && !u.password; }, "Source URL must be HTTP(S) without credentials").optional(),
   sourceTitle: z.string().min(1),
   quote: z.string().min(1),
@@ -56,7 +56,25 @@ export type PartnerRevenuePipeline = {
 };
 const annual = (value: RevenueAmount) => value.amount * (value.period === "month" ? 12 : 1);
 /** A deterministic, theoretical 100%-conversion opportunity, never a forecast. */
-export const calculatePartnerRevenuePipeline = (input: PartnerRevenuePipelineInput): PartnerRevenuePipeline => {
+export const calculatePartnerRevenuePipeline = (original: PartnerRevenuePipelineInput): PartnerRevenuePipeline => {
+  const observation = original.companyRevenue;
+  const providerRevenue: RevenueAmount | null = observation?.amount && observation.currency && observation.providerRecordId ? {
+    amount: observation.amount,
+    currency: observation.currency,
+    period: "year",
+    unit: "company",
+    evidence: {
+      basis: "provider_estimate",
+      confidence: "low",
+      observedAt: observation.observedAt,
+      sourceTitle: `${observation.provider} company estimate (${observation.domain})`,
+      quote: `Provider record ${observation.providerRecordId}; annual revenue field: ${observation.amount} ${observation.currency}. This is a provider estimate, not a reported financial statement.`,
+    },
+  } : null;
+  const input: PartnerRevenuePipelineInput = {
+    ...original,
+    partnerAnnualRevenue: original.partnerAnnualRevenue ?? providerRevenue,
+  };
   const limitations: string[] = [];
   const result: PartnerRevenuePipeline = {
     companyRevenue: input.companyRevenue,
