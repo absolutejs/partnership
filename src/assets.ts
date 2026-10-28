@@ -300,6 +300,10 @@ Use proposal blocks only for genuinely proposed actions, without factual presupp
       const format = ASSET_FORMATS[input.assetType];
       if (!plan.sections.length || plan.sections.some(section => section.blocks.length > blocksPerSection) || plan.sections.length > format.maxSections || plan.sections.flatMap(section => section.blocks).length > format.maxBlocks) throw new Error("Document exceeds the format's section or block limit; compose a concise complete version.");
       if (plan.sections.some(section => !(format.headings as readonly string[]).includes(section.heading))) throw new Error("Choose headings from this document format's allowed headings.");
+      if (format.mode === "legal" && plan.sections.some(section => section.blocks.some(block => block.kind !== "source" && block.kind !== "question")))
+        throw new Error("Legal documents may contain only supplied source blocks and neutral questions");
+      if (format.mode === "announcement" && plan.sections.some(section => section.blocks.some(block => !["source", "question", "statement"].includes(block.kind))))
+        throw new Error("Announcements may contain only supplied source blocks, cited statements and neutral questions");
       const rendered = renderAssetEvidencePlan(sources, plan, hypotheticalAllowed);
       const costs = plan.sections.flatMap(section => section.blocks.map(block => ({
         heading: section.heading,

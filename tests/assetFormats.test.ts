@@ -106,3 +106,9 @@ test('bounded repairs preserve every untouched block and its exact citations',as
  expect(result.markdown).not.toContain('Everyone');
  await expect(editPartnershipAsset({...input,currentMarkdown:original.markdown+'changed',currentTitle:original.title,currentEvidenceDocument:original.evidenceDocument,instructions:'Edit'}, {generateObject:async()=>{throw Error('Provider must not run');}})).rejects.not.toThrow('Provider must not run');
 });
+
+test('bounded repairs cannot carry proposal blocks into a legal document',async()=>{
+ const input={assetType:'proposal' as const,bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources,profile:{},match:{}};
+ const original=await draftPartnershipAsset(input,{generateObject:async req=>({object:req.validate({sections:[{heading:'Scope',blocks:[{kind:'proposal',text:'Consider a workshop pilot.'}]}],missingInputs:[]})})});
+ await expect(editPartnershipAsset({...input,assetType:'term_sheet',currentMarkdown:original.markdown,currentTitle:original.title,currentEvidenceDocument:original.evidenceDocument,instructions:'Keep the scope.'},{generateObject:async req=>({object:req.validate({replacements:[],additionalSections:[],missingInputs:[]})})})).rejects.toThrow('Legal documents may contain only');
+});

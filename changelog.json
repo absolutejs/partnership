@@ -5,6 +5,19 @@
 		{
 			"changes": [
 				{
+					"kind": "fixed",
+					"summary": "Enforce legal and announcement block restrictions across retained blocks as well as revision patches.",
+					"symbols": [
+						"editPartnershipAsset"
+					]
+				}
+			],
+			"date": "2026-10-28",
+			"version": "0.7.1"
+		},
+		{
+			"changes": [
+				{
 					"kind": "added",
 					"summary": "Support bounded revisions of validated asset constructions, preserving untouched blocks and citations while independently reviewing corrections.",
 					"symbols": [
