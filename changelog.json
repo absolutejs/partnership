@@ -5,6 +5,23 @@
 		{
 			"changes": [
 				{
+					"kind": "added",
+					"summary": "Preserve source-attributed provider company context independently of financial calculation inputs.",
+					"symbols": [
+						"CompanyProfileObservationSchema",
+						"CompanyProfileObservation",
+						"PartnerRevenuePipelineInputSchema",
+						"PartnerRevenuePipelineSchema",
+						"calculatePartnerRevenuePipeline"
+					]
+				}
+			],
+			"date": "2026-10-28",
+			"version": "0.9.10"
+		},
+		{
+			"changes": [
+				{
 					"kind": "fixed",
 					"summary": "Preserve source coverage and bounded deeper revenue research; distinguish incomplete research from missing comparable inputs and retain sourced audience counts.",
 					"symbols": [

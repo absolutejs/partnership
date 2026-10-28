@@ -143,3 +143,5 @@ export { CompanyRevenueObservationSchema, type CompanyRevenueObservation } from 
 export { collectFinancialObservations, FinancialObservationSchema, uniqueFinancialObservations, type FinancialObservation } from "./financialObservations";
 
 export { RevenueResearchCoverageSchema, revenueResearchCoverage, partnerRevenueResearchQueries, type RevenueResearchCoverage } from "./revenueResearch";
+
+export { CompanyProfileObservationSchema, type CompanyProfileObservation } from "./revenuePipeline";

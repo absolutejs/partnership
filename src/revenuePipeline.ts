@@ -32,10 +32,21 @@ export const CompanyRevenueObservationSchema = z.object({
   basis: z.literal("provider_estimate"),
 });
 export type CompanyRevenueObservation = z.infer<typeof CompanyRevenueObservationSchema>;
+/** Source-attributed company context; never an implicit calculation input. */
+export const CompanyProfileObservationSchema = z.object({
+  provider: z.string().min(1),
+  providerRecordId: z.string().nullable(),
+  domain: z.string().min(1),
+  sourceUrl: RevenueEvidenceSchema.shape.sourceUrl,
+  observedAt: z.iso.datetime(),
+  facts: z.array(z.object({ label: z.string().min(1), value: z.string().min(1) })).max(20),
+});
+export type CompanyProfileObservation = z.infer<typeof CompanyProfileObservationSchema>;
 export const PartnerRevenuePipelineInputSchema = z.object({
   researchCoverage: RevenueResearchCoverageSchema.optional(),
   observations: z.array(FinancialObservationSchema).optional(),
   companyRevenue: CompanyRevenueObservationSchema.optional(),
+  companyProfile: CompanyProfileObservationSchema.optional(),
   partnerAnnualRevenue: RevenueAmountSchema.nullable(),
   partnerPricing: RevenueAmountSchema.nullable(),
   clientPricing: RevenueAmountSchema.nullable(),
@@ -48,6 +59,7 @@ export type PartnerRevenuePipeline = {
   researchCoverage?: RevenueResearchCoverage;
   observations?: FinancialObservation[];
   companyRevenue?: CompanyRevenueObservation;
+  companyProfile?: CompanyProfileObservation;
   status: "available" | "unavailable";
   customerEquivalents: number | null;
   potentialPartnerRevenue: number | null;
@@ -111,6 +123,7 @@ export const calculatePartnerRevenuePipeline = (original: PartnerRevenuePipeline
   const result: PartnerRevenuePipeline = {
     researchCoverage: input.researchCoverage,
     companyRevenue: input.companyRevenue,
+    companyProfile: input.companyProfile,
     observations: input.observations,
     status: "unavailable", customerEquivalents: null, potentialPartnerRevenue: null,
     currency: null, annualPartnerRevenue: null, annualPartnerPricing: null,
@@ -211,6 +224,7 @@ export const PartnerRevenuePipelineSchema = z.object({
   researchCoverage: RevenueResearchCoverageSchema.optional(),
   observations: z.array(FinancialObservationSchema).optional(),
   companyRevenue: CompanyRevenueObservationSchema.optional(),
+  companyProfile: CompanyProfileObservationSchema.optional(),
   status: z.enum(["available", "unavailable"]),
   customerEquivalents: z.number().positive().nullable(),
   potentialPartnerRevenue: z.number().positive().nullable(),
