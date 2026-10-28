@@ -12,7 +12,9 @@
 						"CompanyProfileObservation",
 						"PartnerRevenuePipelineInputSchema",
 						"PartnerRevenuePipelineSchema",
-						"calculatePartnerRevenuePipeline"
+						"calculatePartnerRevenuePipeline",
+						"PartnerRevenuePipeline",
+						"partnerRevenuePipelineSchema"
 					]
 				}
 			],
