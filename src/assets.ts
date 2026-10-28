@@ -1,6 +1,6 @@
 import { ASSET_CONTENT_POLICY } from "./assetContentReview";
 import { ASSET_FORMATS } from "./assetFormats";
-import { AssetEvidencePlanSchema, buildAssetEvidence, renderAssetEvidencePlan, type AssetEvidenceDocument, type AssetEvidenceSource } from "./assetEvidence";
+import { AssetEvidencePlanSchema, buildAssetEvidence, renderAssetEvidencePlan, validateAssetEvidenceDocument, type AssetEvidenceDocument, type AssetEvidenceSource } from "./assetEvidence";
 import { z } from "zod";
 import type { PartnershipContext } from "./ai";
 
@@ -199,6 +199,9 @@ const constructAsset = async (input: AssetInput | AssetEditInput, ctx: Partnersh
   const sources = evidenceSources(input);
   const hypotheticalAllowed = "hypotheticalAllowed" in input && input.hypotheticalAllowed === true;
   const evidence = buildAssetEvidence(sources);
+  const repairDocument = "currentEvidenceDocument" in input ? input.currentEvidenceDocument : undefined;
+  if (repairDocument && "currentMarkdown" in input)
+    validateAssetEvidenceDocument(sources, input.currentMarkdown, repairDocument);
   const entry = PARTNERSHIP_ASSET_CATALOG[input.assetType];
   const references = new Map(evidence.map((record, index) => [`e${index + 1}`, record.id]));
   const promptSources = sources.map(source => ({ id: source.id, label: source.label, kind: source.kind, records: evidence.flatMap((record,index) => record.sourceId === source.id ? [{ reference: `e${index + 1}`, location: record.pointer, words: countWords(record.text), text: record.text }] : []) }));
@@ -250,29 +253,52 @@ const constructAsset = async (input: AssetInput | AssetEditInput, ctx: Partnersh
     heading: z.enum(format.headings),
     blocks: blocks.max(blocksPerSection),
   })).min(1).max(format.maxSections) });
+  const repairBlocks = repairDocument?.plan.sections.flatMap(section => section.blocks.map(block => ({ heading: section.heading, block }))) ?? [];
+  const repairSchema = z.object({
+    replacements: z.array(z.object({ index: z.number().int().min(0).max(Math.max(0, repairBlocks.length - 1)), blocks: z.array(blocks.element).max(blocksPerSection) }).strict()).max(repairBlocks.length),
+    additionalSections: z.array(formatSchema.shape.sections.element).max(format.maxSections),
+    missingInputs: AssetEvidencePlanSchema.shape.missingInputs,
+  }).strict();
+  const bindRepair = (raw: unknown) => {
+    if (!repairDocument) throw new Error("Missing repair document");
+    const patch = repairSchema.parse(raw);
+    if (new Set(patch.replacements.map(item => item.index)).size !== patch.replacements.length)
+      throw new Error("Each existing block may be replaced only once");
+    const replacements = new Map(patch.replacements.map(item => {
+      const original = repairBlocks[item.index];
+      if (!original) throw new Error("Unknown repair block");
+      const bound = item.blocks.length ? bindPlan({ sections: [{ heading: original.heading, blocks: item.blocks }], missingInputs: [] }) : { sections: [] };
+      return [item.index, bound.sections[0]?.blocks ?? []] as const;
+    }));
+    const additional = patch.additionalSections.length ? bindPlan({ sections: patch.additionalSections, missingInputs: [] }).sections : [];
+    let index = 0;
+    return { ...repairDocument.plan, missingInputs: patch.missingInputs, sections: repairDocument.plan.sections.map(section => ({
+      ...section, blocks: section.blocks.flatMap(block => replacements.get(index++) ?? [block]),
+    })).filter(section => section.blocks.length > 0).concat(additional) };
+  };
   const { object } = await ctx.generateObject({
     feature: "currentMarkdown" in input ? "partnershipAssetEdit" : "partnershipAssets",
     maxTokens: assetOutputTokens(input.bounds),
     messages: [{ role: "user", content: JSON.stringify({
       compositionBudget: { maxSections: format.maxSections, maxBlocksPerSection: blocksPerSection, maxWords: format.maxWords, maxAuthoredBlockWords, targetWords: Math.floor(format.maxWords * 0.8) },
       assetType: input.assetType, structureGuidance: entry.guidance, format: ASSET_FORMATS[input.assetType],
-      sources: promptSources, hypotheticalAllowed, current: "currentMarkdown" in input ? { markdown: input.currentMarkdown, instructions: input.instructions } : undefined,
+      sources: promptSources, hypotheticalAllowed, current: "currentMarkdown" in input ? { markdown: input.currentMarkdown, instructions: input.instructions, blocks: repairDocument ? repairBlocks.map((item,index) => ({ index, heading: item.heading, block: item.block })) : undefined } : undefined,
     }) }],
     model: ctx.model ?? DEFAULT_MODEL,
-    schema: z.toJSONSchema(formatSchema),
+    schema: z.toJSONSchema(repairDocument ? repairSchema : formatSchema),
     systemPrompt: `${SYSTEM}
 DOCUMENT FITNESS REQUIREMENTS:
 ${ASSET_CONTENT_POLICY}
 Use these requirements while composing. Missing required facts go in missingInputs; do not fabricate a finished announcement or review. Select only facts relevant to each heading. For legal formats, only source and question blocks are permitted. Use questions for any unsupplied term, even a reasonable default; never invent a proposal block.
 CONSTRUCTION CONTRACT OVERRIDES PROSE FORMATTING INSTRUCTIONS:
 Return sections containing source references, proposed actions, and neutral questions. Never invent quotations, metrics, titles or factual headings. Non-legal documents may use statement blocks to write concise cited prose. Each statement MUST cite one or more supplied evidenceIds (e1, e2...) that entail every assertion, preserving intent versus agreement and every qualifier. Statements receive independent factual review and cannot pass on citation presence alone. Do not turn an intention into an announcement. For non-legal formats, use concise statement blocks with supporting source reference IDs to turn intake wording into readable document prose. Every assertion must be entailed by those exact sources and independently reviewed; a citation is not permission to infer a new benefit, number, capability or agreement. Preserve qualifications, people, time periods and amounts. Use source blocks when a verbatim fact is already suitable. Do not paste internal intake goals or partner-selection preferences into customer-facing Audience, Benefits, Positioning or Next steps. Legal terms continue to require verbatim supplied source blocks. For every source block, classify its use truthfully before placing it: objective for targets/intentions, baseline for current business size, past_result for achieved outcomes, current_activity for actual ongoing work, supplied_term for explicit contractual instructions, boundary for stated constraints, and superseded for obsolete corrections (omit these). These classifications do not verify the facts; the independent content review checks them in context. Select source reference IDs (e1, e2, etc.); the server inserts their exact text and provenance. A source reference is a reported quotation, never independent verification. Preserve context and uncertainty; do not cherry-pick an outdated goal or an assistant's speculation as a confirmed outcome. Select the strongest relevant primary records. Each source reference may appear only once in the whole document. Never include conversational setup such as a dream-partner declaration, intake instructions, or obsolete-goal correction chatter when the current fact is already supplied. Prefer concise business facts. Follow FORMAT headings and limits; do not force every document into a pitch or diligence checklist. An announcement starts with one short, source-cited statement in a Headline section, followed by a dated Announcement lead. Do not infer shared motives, strategic decisions or discussions from similar profiles. Available headings are optional, not a checklist. Budget the rendered document, not the JSON: each source reference expands to its complete text and its supplied words count consumes the budget. Aim below targetWords to leave room for proposals and questions. Each authored block must fit maxAuthoredBlockWords; use a second short block if needed, or omit a less relevant point. Never truncate a sentence or qualification. Do not select a record longer than the entire budget. Prefer fewer complete relevant records; never cut a quotation or discard a qualification to fit. An announcement must be coherent third-person paragraphs, not intake labels or verbatim first-person setup. Use statement blocks for its narrative; no proposed headline or fictional quote. An email must read as a short message with one ask. A guide must contain actionable selling and support guidance. Do not use discovery questions as a substitute for the requested deliverable; put unanswered preparation questions in missingInputs. Legal documents receive a fixed non-binding draft label from the renderer. Do not generate a non-binding-status section, legal-effect disclaimer, enforceability assertion, or claims that this document creates no obligations. Focus on proposed terms and move unresolved approvals into missingInputs.
-Use proposal blocks only for genuinely proposed actions, without factual presuppositions, claims of existing capability, agreed terms or guaranteed results. Use question blocks for neutral requests for missing information. These blocks will be visibly labeled and still require semantic review. Never put a factual assertion in a proposal/question to bypass references. Unknown information goes in missingInputs; it must not be invented. Use the allowed neutral section headings. Do not pad documents to fill templates or repeat the same evidence. Existing document text is editing context, NOT evidence. A hypothetical block is permitted ONLY when hypotheticalAllowed=true: it is visibly fictional and must never be presented as real proof or an actual result. Otherwise do not create hypothetical blocks.`,
+Use proposal blocks only for genuinely proposed actions, without factual presuppositions, claims of existing capability, agreed terms or guaranteed results. Use question blocks for neutral requests for missing information. These blocks will be visibly labeled and still require semantic review. Never put a factual assertion in a proposal/question to bypass references. Unknown information goes in missingInputs; it must not be invented. Use the allowed neutral section headings. Do not pad documents to fill templates or repeat the same evidence. Existing document text is editing context, NOT evidence. A hypothetical block is permitted ONLY when hypotheticalAllowed=true: it is visibly fictional and must never be presented as real proof or an actual result. Otherwise do not create hypothetical blocks.${repairDocument ? "\nBOUNDED REVISION MODE: Return only replacements for existing block indexes that need correction, plus additionalSections and missingInputs. Leave additionalSections empty unless the correction needs a genuinely missing section. The server preserves all untouched blocks, headings and citations verbatim. Do not rewrite supported blocks or replace their source IDs. Replacements must use the supplied short source references (e1, e2...) rather than copying old citation IDs. Correct only the requested findings; do not introduce new benefits, modifiers or examples. Multiple replacement blocks remain in the original section. Keep each replacement concise and supported. An empty replacement removes an unusable block; do not return a full document." : ""}`,
     toolDescription: "Select source records and compose explicitly labeled proposals and questions.",
     toolName: "partnership_asset",
     validate: raw => {
-      const plan = bindPlan(raw);
+      const plan = repairDocument ? bindRepair(raw) : bindPlan(raw);
       const format = ASSET_FORMATS[input.assetType];
-      if (plan.sections.length > format.maxSections || plan.sections.flatMap(section => section.blocks).length > format.maxBlocks) throw new Error("Document exceeds the format's section or block limit; compose a concise complete version.");
+      if (!plan.sections.length || plan.sections.some(section => section.blocks.length > blocksPerSection) || plan.sections.length > format.maxSections || plan.sections.flatMap(section => section.blocks).length > format.maxBlocks) throw new Error("Document exceeds the format's section or block limit; compose a concise complete version.");
       if (plan.sections.some(section => !(format.headings as readonly string[]).includes(section.heading))) throw new Error("Choose headings from this document format's allowed headings.");
       const rendered = renderAssetEvidencePlan(sources, plan, hypotheticalAllowed);
       const costs = plan.sections.flatMap(section => section.blocks.map(block => ({
@@ -301,6 +327,9 @@ export type AssetEditInput = {
   assetType: PartnershipAssetType;
   assetTypeLabel?: string;
   bounds: AssetBounds;
+  /** Retained validated construction for block-wise repairs. Untouched text and
+   * citations are preserved by the server rather than regenerated by the model. */
+  currentEvidenceDocument?: AssetEvidenceDocument;
   /** The current document body to revise. */
   currentMarkdown: string;
   /** The current document title. */
@@ -315,5 +344,5 @@ export type AssetEditInput = {
   profile?: Record<string, unknown>;
 };
 
-/** Existing prose is context only; edits rebuild references against current sources. */
+/** Existing prose is context only. A supplied construction enables bounded block repairs. */
 export const editPartnershipAsset = (input: AssetEditInput, ctx: PartnershipContext) => constructAsset(input, ctx);

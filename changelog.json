@@ -5,6 +5,20 @@
 		{
 			"changes": [
 				{
+					"kind": "added",
+					"summary": "Support bounded revisions of validated asset constructions, preserving untouched blocks and citations while independently reviewing corrections.",
+					"symbols": [
+						"editPartnershipAsset",
+						"AssetEditInput"
+					]
+				}
+			],
+			"date": "2026-10-28",
+			"version": "0.7.0"
+		},
+		{
+			"changes": [
+				{
 					"kind": "fixed",
 					"summary": "Distinguish preparation of proposed sales drafts from authorization for public announcements or agreed endorsements.",
 					"symbols": [

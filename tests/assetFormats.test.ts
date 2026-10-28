@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { ASSET_FORMATS } from "../src/assetFormats";
-import { PARTNERSHIP_ASSET_TYPES, draftPartnershipAsset } from "../src/assets";
+import { PARTNERSHIP_ASSET_TYPES, draftPartnershipAsset, editPartnershipAsset } from "../src/assets";
 import { presentAssetEvidenceDocument } from "../src/assetEvidence";
 const sources=[{id:'intake',label:'Intake',kind:'intake',content:'We sell workshops. We sold 41 tickets.'}];
 for(const assetType of PARTNERSHIP_ASSET_TYPES){
@@ -84,3 +84,25 @@ test('non-legal sheets can compose concise cited prose without changing their ev
  return {object:req.validate(plan('We sell workshops.'))};
  }});
  });
+
+test('bounded repairs preserve every untouched block and its exact citations',async()=>{
+ const input={assetType:'sell_sheet' as const,bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources,profile:{},match:{}};
+ const original=await draftPartnershipAsset(input,{generateObject:async req=>({object:req.validate({sections:[
+ {heading:'Offer',blocks:[{kind:'statement',text:'We sell workshops.',evidenceIds:['e1']}]},
+ {heading:'Audience',blocks:[{kind:'statement',text:'Everyone buys workshops.',evidenceIds:['e1']}]},
+ {heading:'Talking points',blocks:[{kind:'source',evidenceId:'e2',use:'past_result'}]},
+ ],missingInputs:[]})})});
+ const result=await editPartnershipAsset({...input,currentMarkdown:original.markdown,currentTitle:original.title,currentEvidenceDocument:original.evidenceDocument,instructions:'Correct the unsupported audience.'},{generateObject:async req=>{
+ const patch={replacements:[{index:1,blocks:[{kind:'statement',text:'Workshop customers.',evidenceIds:['e1']}]}],additionalSections:[],missingInputs:[]};
+ expect(JSON.parse(req.messages[0]!.content).current.blocks).toHaveLength(3);
+ expect(()=>req.validate({...patch,replacements:[...patch.replacements,...patch.replacements]})).toThrow('only once');
+ expect(()=>req.validate({...patch,replacements:[{...patch.replacements[0],index:99}]})).toThrow();
+ expect(()=>req.validate({...patch,replacements:[{index:1,blocks:[{kind:'statement',text:'Unsupported.',evidenceIds:['invented']}]}]})).toThrow('Unknown statement source');
+ return {object:req.validate(patch)};
+ }});
+ expect(result.evidenceDocument.plan.sections[0]).toEqual(original.evidenceDocument.plan.sections[0]);
+ expect(result.evidenceDocument.plan.sections[2]).toEqual(original.evidenceDocument.plan.sections[2]);
+ expect(result.evidenceDocument.citations).toEqual(original.evidenceDocument.citations);
+ expect(result.markdown).not.toContain('Everyone');
+ await expect(editPartnershipAsset({...input,currentMarkdown:original.markdown+'changed',currentTitle:original.title,currentEvidenceDocument:original.evidenceDocument,instructions:'Edit'}, {generateObject:async()=>{throw Error('Provider must not run');}})).rejects.not.toThrow('Provider must not run');
+});
