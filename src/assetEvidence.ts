@@ -170,7 +170,7 @@ export type AssetPresentationSource = {
 };
 /** Remove conversational framing only through fixed, meaning-preserving prefixes.
  * Unrecognized statements stay verbatim; numbers, negation and qualifiers are never rewritten. */
-const sourceStatement = (text: string) => {
+export const sourceStatement = (text: string) => {
   const rules: readonly [RegExp, string][] = [
     [/^My named dream partner is /u, "Target partner: "],
     [/^I am the founder of /u, "Business: "],

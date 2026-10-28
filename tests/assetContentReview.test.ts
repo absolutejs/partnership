@@ -12,7 +12,7 @@ test('reviews source-backed blocks in their section context and gates required i
   expect(data.format.permittedHeadings).toContain('Results');
   expect(data).not.toHaveProperty('sources');
   expect(data).not.toHaveProperty('evidence');
-  expect(data.blocks[0]).toMatchObject({heading:'Results',text:'Our target is 137 new customers.'});
+  expect(data.blocks[0]).toMatchObject({heading:'Results',text:'Target is 137 new customers.'});
   expect(req.systemPrompt).toContain('Results/Progress must not present goals');
   expect(()=>req.validate({blocks:[],documentIssues:[],requiredInputs:[]})).toThrow('every block');
   expect(()=>req.validate({blocks:[{index:1,issue:null}],documentIssues:[],requiredInputs:[]})).toThrow('every block');
@@ -67,5 +67,28 @@ test('sell-sheet review receives the same enablement purpose as composition',asy
   expect(payload.format.purpose).toContain('not a pitch to recruit');
   expect(req.systemPrompt).toContain('Never request their removal merely to sound confident');
   return {object:req.validate({blocks:[{index:0,issue:null}],documentIssues:[],requiredInputs:[]})};
+ }});
+});
+
+test('review receives revision scope and separates optional improvements from blocking defects',async()=>{
+ const instructions='Commercial terms are intentionally omitted from this introductory draft.';
+ const result=await reviewAssetContent({...input,instructions},{generateObject:async req=>{
+ expect(JSON.parse(req.messages[0]!.content).revisionInstructions).toBe(instructions);
+ return {object:req.validate({blocks:[{index:0,issue:null}],documentIssues:[],requiredInputs:[],suggestions:['A shorter heading could improve clarity.']})};
+ }});
+ expect(assetContentIssues(result)).toEqual([]);
+ expect(result.suggestions).toHaveLength(1);
+});
+
+test('source-block review sees the exported phrasing and retains the original evidence',async()=>{
+ const source=[{id:'intake',label:'Intake',content:'We sell workshops.'}];
+ const record=buildAssetEvidence(source)[0]!;
+ const doc=renderAssetEvidencePlan(source,{sections:[{heading:'Offer',blocks:[{kind:'source',evidenceId:record.id}]}],missingInputs:[]});
+ await reviewAssetContent({assetType:'sell_sheet',sources:source,document:doc.evidenceDocument,markdown:doc.markdown},{generateObject:async req=>{
+ const payload=JSON.parse(req.messages[0]!.content);
+ expect(payload.blocks[0].text).toBe('Offer: workshops.');
+ expect(payload.blocks[0].supportingEvidence[0].text).toBe('We sell workshops.');
+ expect(payload.document).toContain('Offer: workshops');
+ return {object:req.validate({blocks:[{index:0,issue:null}],documentIssues:[],requiredInputs:[]})};
  }});
 });

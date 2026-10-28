@@ -95,6 +95,7 @@ test('bounded repairs preserve every untouched block and its exact citations',as
  const result=await editPartnershipAsset({...input,currentMarkdown:original.markdown,currentTitle:original.title,currentEvidenceDocument:original.evidenceDocument,instructions:'Correct the unsupported audience.'},{generateObject:async req=>{
  const patch={replacements:[{index:1,blocks:[{kind:'statement',text:'Workshop customers.',evidenceIds:['e1']}]}],additionalSections:[],missingInputs:[]};
  expect(JSON.parse(req.messages[0]!.content).current.blocks).toHaveLength(3);
+ expect(req.maxTokens).toBe(2200);
  expect(()=>req.validate({...patch,replacements:[...patch.replacements,...patch.replacements]})).toThrow('only once');
  expect(()=>req.validate({...patch,replacements:[{...patch.replacements[0],index:99}]})).toThrow();
  expect(()=>req.validate({...patch,replacements:[{index:1,blocks:[{kind:'statement',text:'Unsupported.',evidenceIds:['invented']}]}]})).toThrow('Unknown statement source');

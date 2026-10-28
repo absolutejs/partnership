@@ -6,6 +6,22 @@
 			"changes": [
 				{
 					"kind": "added",
+					"summary": "Review the rendered asset in its requested editorial scope, separate nonblocking suggestions, and reserve bounded revision output by format size.",
+					"symbols": [
+						"reviewAssetContent",
+						"AssetContentReview",
+						"ASSET_CONTENT_POLICY",
+						"editPartnershipAsset"
+					]
+				}
+			],
+			"date": "2026-10-28",
+			"version": "0.9.0"
+		},
+		{
+			"changes": [
+				{
+					"kind": "added",
 					"summary": "Allow rejected factual revision blocks to require complete source evidence instead of another unsupported paraphrase.",
 					"symbols": [
 						"editPartnershipAsset",

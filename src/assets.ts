@@ -283,7 +283,7 @@ const constructAsset = async (input: AssetInput | AssetEditInput, ctx: Partnersh
   };
   const { object } = await ctx.generateObject({
     feature: "currentMarkdown" in input ? "partnershipAssetEdit" : "partnershipAssets",
-    maxTokens: assetOutputTokens(input.bounds),
+    maxTokens: repairDocument ? Math.min(assetOutputTokens(input.bounds), Math.max(MIN_ASSET_OUTPUT_TOKENS, format.maxWords * 6 + ASSET_JSON_OVERHEAD_TOKENS)) : assetOutputTokens(input.bounds),
     messages: [{ role: "user", content: JSON.stringify({
       compositionBudget: { maxSections: format.maxSections, maxBlocksPerSection: blocksPerSection, maxWords: format.maxWords, maxAuthoredBlockWords, targetWords: Math.floor(format.maxWords * 0.8) },
       assetType: input.assetType, structureGuidance: entry.guidance, format: ASSET_FORMATS[input.assetType],
