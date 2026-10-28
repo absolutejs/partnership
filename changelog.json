@@ -8,6 +8,7 @@
 					"kind": "fixed",
 					"summary": "Distinguish sell-sheet readers from end-customer audiences and avoid blocking useful drafts on optional recruitment details.",
 					"symbols": [
+						"ASSET_FORMATS",
 						"ASSET_CONTENT_POLICY"
 					]
 				}
