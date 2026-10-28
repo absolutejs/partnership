@@ -62,3 +62,13 @@ test('composition exposes expanded quotation costs and actionable repair feedbac
   return {object:req.validate({sections:[{heading:'Offer',blocks:[{kind:'source',evidenceId:records[0].reference,use:'background'}]}],missingInputs:[]})};
  }});
 });
+
+test('non-legal sheets can compose concise cited prose without changing their evidence',async()=>{
+ const result=await draftPartnershipAsset({assetType:'sell_sheet',bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources,profile:{},match:{}},{generateObject:async req=>{
+  expect(()=>req.validate({sections:[{heading:'Offer',blocks:[{kind:'statement',text:'Workshops are available.',evidenceIds:['invented']}]}],missingInputs:[]})).toThrow('Unknown statement source');
+  return {object:req.validate({sections:[{heading:'Offer',blocks:[{kind:'statement',text:'Workshops are available.',evidenceIds:['e1']}]}],missingInputs:[]})};
+ }});
+ expect(result.evidenceDocument?.citations[0]?.text).toBe('We sell workshops.');
+ expect(result.markdown).toContain('Workshops are available');
+ await expect(draftPartnershipAsset({assetType:'term_sheet',bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources,profile:{},match:{}},{generateObject:async req=>({object:req.validate({sections:[{heading:'Scope',blocks:[{kind:'statement',text:'Workshops are available.',evidenceIds:['e1']}]}],missingInputs:[]})})})).rejects.toThrow();
+});

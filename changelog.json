@@ -6,6 +6,19 @@
 			"changes": [
 				{
 					"kind": "fixed",
+					"summary": "Allow concise source-cited prose in non-legal assets, retaining original evidence and independent claim review while keeping legal terms source-only.",
+					"symbols": [
+						"editPartnershipAsset"
+					]
+				}
+			],
+			"date": "2026-10-28",
+			"version": "0.6.7"
+		},
+		{
+			"changes": [
+				{
+					"kind": "fixed",
 					"summary": "Align sell-sheet composition and review on sales enablement, permit positioning and talking points, and preserve explicit proposal qualifications instead of requesting unsupported confidence.",
 					"symbols": [
 						"ASSET_FORMATS",
