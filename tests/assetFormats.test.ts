@@ -72,3 +72,15 @@ test('non-legal sheets can compose concise cited prose without changing their ev
  expect(result.markdown).toContain('Workshops are available');
  await expect(draftPartnershipAsset({assetType:'term_sheet',bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources,profile:{},match:{}},{generateObject:async req=>({object:req.validate({sections:[{heading:'Scope',blocks:[{kind:'statement',text:'Workshops are available.',evidenceIds:['e1']}]}],missingInputs:[]})})})).rejects.toThrow();
 });
+
+ test('authored prose budgets are enforced in the provider schema without truncating citations',async()=>{
+ await draftPartnershipAsset({assetType:'sell_sheet',bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources,profile:{},match:{}},{generateObject:async req=>{
+ const payload=JSON.parse(req.messages[0]!.content);
+ expect(payload.compositionBudget.maxAuthoredBlockWords).toBe(25);
+ expect(JSON.stringify(req.schema)).toContain('pattern');
+ expect(req.systemPrompt).not.toContain('Only announcement documents');
+ const plan=(text:string)=>({sections:[{heading:'Offer',blocks:[{kind:'statement',text,evidenceIds:['e1']}]}],missingInputs:[]});
+ expect(()=>req.validate(plan('word '.repeat(26)))).toThrow('at most 25 words');
+ return {object:req.validate(plan('We sell workshops.'))};
+ }});
+ });

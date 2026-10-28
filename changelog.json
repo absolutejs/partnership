@@ -6,6 +6,19 @@
 			"changes": [
 				{
 					"kind": "fixed",
+					"summary": "Enforce authored asset word budgets in provider schemas while preserving complete evidence and factual review.",
+					"symbols": [
+						"editPartnershipAsset"
+					]
+				}
+			],
+			"date": "2026-10-28",
+			"version": "0.6.8"
+		},
+		{
+			"changes": [
+				{
+					"kind": "fixed",
 					"summary": "Allow concise source-cited prose in non-legal assets, retaining original evidence and independent claim review while keeping legal terms source-only.",
 					"symbols": [
 						"editPartnershipAsset"
