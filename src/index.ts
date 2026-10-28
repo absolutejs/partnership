@@ -139,3 +139,5 @@ export type { AssetPresentationOptions } from "./assetEvidence";
 export { ASSET_CONTENT_POLICY, reviewAssetContent, assetContentIssues, type AssetContentReview } from "./assetContentReview";
 
 export { CompanyRevenueObservationSchema, type CompanyRevenueObservation } from "./revenuePipeline";
+
+export { collectFinancialObservations, FinancialObservationSchema, uniqueFinancialObservations, type FinancialObservation } from "./financialObservations";

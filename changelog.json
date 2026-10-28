@@ -6,6 +6,27 @@
 			"changes": [
 				{
 					"kind": "fixed",
+					"summary": "Retain exact sourced financial observations independently of calculation eligibility, including ranges, program fees and one-time prices; preserve them when extraction fails.",
+					"symbols": [
+						"researchPartnerRevenuePipeline",
+						"calculatePartnerRevenuePipeline",
+						"PartnerRevenuePipelineInputSchema",
+						"PartnerRevenuePipelineSchema",
+						"PartnerRevenuePipeline",
+						"partnerRevenuePipelineSchema",
+						"collectFinancialObservations",
+						"FinancialObservationSchema",
+						"uniqueFinancialObservations"
+					]
+				}
+			],
+			"date": "2026-10-28",
+			"version": "0.9.8"
+		},
+		{
+			"changes": [
+				{
+					"kind": "fixed",
 					"summary": "Reject financial bounds, ranges and starting prices as exact revenue or pricing, including stripped qualifiers in retained findings and legacy calculations.",
 					"symbols": [
 						"researchPartnerRevenuePipeline"
