@@ -94,3 +94,33 @@ test("financial source metadata comes from retained research, not model guesses"
   expect(result.inputs.partnerPricing?.evidence.observedAt).toBe(recordedAt);
   expect(result.inputs.partnerPricing?.evidence.sourceTitle).toBe("Recorded official title");
 });
+
+describe("bounded financial figures", () => {
+  test.each(["<$5 Million", "&lt;$5 Million", "≤ USD 5 million", "Less than $5 million", "Up to $5 million", "$1–5 million", "$1 million to $5 million", "Between $1 million and $5 million", "$5 million+", "Starting at $5 million"])("does not present %s as exact revenue", quote => {
+    const value = money(5000000);
+    value.evidence.quote = quote;
+    const result = calculatePartnerRevenuePipeline({ ...input(), partnerAnnualRevenue: value });
+    expect(result.inputs.partnerAnnualRevenue).toBeNull();
+    expect(result.potentialPartnerRevenue).toBeNull();
+    expect(result.limitations.join(" ")).toContain("bound, range, or starting amount");
+    expect(value.evidence.quote).toBe(quote);
+  });
+  test("rejects starting pricing even when other inputs are available", () => {
+    const i = input(); i.partnerPricing.evidence.quote = "Plans start from $1200 per year";
+    expect(calculatePartnerRevenuePipeline(i).inputs.partnerPricing).toBeNull();
+  });
+  test.each(["$5 million annual revenue", "Annual revenue USD 5,000,000", "Annual revenue $5 million. More than 200 employees."])("preserves scalar %s without confusing unrelated quantities", quote => {
+    const i=input(); i.partnerAnnualRevenue.amount=5000000; i.partnerAnnualRevenue.evidence.quote=quote;
+    const result=calculatePartnerRevenuePipeline(i);
+    expect(result.status).toBe("available");
+  });
+  test.each(["<$5 Million", "$5 Million"])("checks the full retained finding when extracted quote is %s", async quote => {
+    const value = money(5000000); value.evidence.quote=quote;
+    const result=await researchPartnerRevenuePipeline({partnerName:"REBOOT"},{
+      research:async()=>({status:"grounded",text:"",sources:[{id:"s",url:value.evidence.sourceUrl!,title:"Company revenue"}],findings:[{sourceId:"s",claim:"Revenue bracket",quote:"### Revenue\n\n<$5 Million"}],limitations:[],generatedAt:new Date().toISOString()}),
+      generateObject:async request=>({object:request.validate({partnerAnnualRevenue:value,partnerPricing:null,assumptions:[]})}),
+    });
+    expect(result.inputs.partnerAnnualRevenue).toBeNull();
+    expect(result.limitations.join(" ")).toContain("bound, range, or starting amount");
+  });
+});
