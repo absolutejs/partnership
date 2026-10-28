@@ -5,6 +5,21 @@
 		{
 			"changes": [
 				{
+					"kind": "added",
+					"summary": "Allow rejected factual revision blocks to require complete source evidence instead of another unsupported paraphrase.",
+					"symbols": [
+						"editPartnershipAsset",
+						"AssetEditInput",
+						"ASSET_CONTENT_POLICY"
+					]
+				}
+			],
+			"date": "2026-10-28",
+			"version": "0.8.0"
+		},
+		{
+			"changes": [
+				{
 					"kind": "fixed",
 					"summary": "Enforce legal and announcement block restrictions across retained blocks as well as revision patches.",
 					"symbols": [

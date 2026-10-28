@@ -112,3 +112,17 @@ test('bounded repairs cannot carry proposal blocks into a legal document',async(
  const original=await draftPartnershipAsset(input,{generateObject:async req=>({object:req.validate({sections:[{heading:'Scope',blocks:[{kind:'proposal',text:'Consider a workshop pilot.'}]}],missingInputs:[]})})});
  await expect(editPartnershipAsset({...input,assetType:'term_sheet',currentMarkdown:original.markdown,currentTitle:original.title,currentEvidenceDocument:original.evidenceDocument,instructions:'Keep the scope.'},{generateObject:async req=>({object:req.validate({replacements:[],additionalSections:[],missingInputs:[]})})})).rejects.toThrow('Legal documents may contain only');
 });
+
+test('rejected factual blocks can require exact evidence while preserving other content',async()=>{
+ const input={assetType:'sell_sheet' as const,bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources,profile:{},match:{}};
+ const original=await draftPartnershipAsset(input,{generateObject:async req=>({object:req.validate({sections:[{heading:'Offer',blocks:[{kind:'statement',text:'Guaranteed workshop results.',evidenceIds:['e1']}]}],missingInputs:[]})})});
+ const result=await editPartnershipAsset({...input,currentMarkdown:original.markdown,currentTitle:original.title,currentEvidenceDocument:original.evidenceDocument,sourceOnlyBlockIndexes:[0],instructions:'Correct the unsupported promise.'},{generateObject:async req=>{
+ const patch=(blocks:unknown[])=>({replacements:[{index:0,blocks}],additionalSections:[],missingInputs:[]});
+ expect(()=>req.validate(patch([{kind:'statement',text:'Different guaranteed results.',evidenceIds:['e1']}]))).toThrow('complete source references');
+ expect(()=>req.validate(patch([{kind:'proposal',text:'We guarantee workshop results.'}]))).toThrow('complete source references');
+ expect(JSON.parse(req.messages[0]!.content).current.blocks[0].sourceOnly).toBe(true);
+ return {object:req.validate(patch([{kind:'source',evidenceId:'e1',use:'background'}]))};
+ }});
+ expect(result.evidenceDocument.plan.sections[0]?.blocks[0]?.kind).toBe('source');
+ expect(result.evidenceDocument.citations[0]?.text).toBe('We sell workshops.');
+});
