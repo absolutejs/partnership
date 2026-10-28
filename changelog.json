@@ -5,6 +5,19 @@
 		{
 			"changes": [
 				{
+					"kind": "fixed",
+					"summary": "Allow bounded source repairs to expand a section while enforcing the overall document block and word limits.",
+					"symbols": [
+						"editPartnershipAsset"
+					]
+				}
+			],
+			"date": "2026-10-28",
+			"version": "0.9.1"
+		},
+		{
+			"changes": [
+				{
 					"kind": "added",
 					"summary": "Review the rendered asset in its requested editorial scope, separate nonblocking suggestions, and reserve bounded revision output by format size.",
 					"symbols": [

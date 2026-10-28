@@ -127,3 +127,17 @@ test('rejected factual blocks can require exact evidence while preserving other 
  expect(result.evidenceDocument.plan.sections[0]?.blocks[0]?.kind).toBe('source');
  expect(result.evidenceDocument.citations[0]?.text).toBe('We sell workshops.');
 });
+
+
+test('source fallback can expand a section while retaining the global document block cap',async()=>{
+ const input={assetType:'sell_sheet' as const,bounds:{markdownMin:1,markdownMax:10000,titleMin:1,titleMax:100},sources,profile:{},match:{}};
+ const section=(heading:string)=>({heading,blocks:[{kind:'statement',text:'We sell workshops.',evidenceIds:['e1']},{kind:'statement',text:'We sold tickets.',evidenceIds:['e2']}]});
+ const original=await draftPartnershipAsset(input,{generateObject:async req=>({object:req.validate({sections:[section('Offer')],missingInputs:[]})})});
+ const patch={replacements:[{index:0,blocks:[{kind:'source',evidenceId:'e1',use:'background'},{kind:'source',evidenceId:'e2',use:'past_result'}]}],additionalSections:[],missingInputs:[]};
+ const edit=(draft:typeof original)=>editPartnershipAsset({...input,currentMarkdown:draft.markdown,currentTitle:draft.title,currentEvidenceDocument:draft.evidenceDocument,sourceOnlyBlockIndexes:[0],instructions:'Use the exact sources.'},{generateObject:async req=>({object:req.validate(patch)})});
+ const repaired=await edit(original);
+ expect(repaired.evidenceDocument.plan.sections[0]?.blocks).toHaveLength(3);
+ expect(repaired.evidenceDocument.plan.sections[0]?.blocks[2]).toEqual(original.evidenceDocument.plan.sections[0]?.blocks[1]);
+ const full=await draftPartnershipAsset(input,{generateObject:async req=>({object:req.validate({sections:ASSET_FORMATS.sell_sheet.headings.slice(0,6).map(section),missingInputs:[]})})});
+ await expect(edit(full)).rejects.toThrow('section or block limit');
+});
